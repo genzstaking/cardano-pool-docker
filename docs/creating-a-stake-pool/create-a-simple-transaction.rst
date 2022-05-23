@@ -16,7 +16,7 @@ Protocol parameters are used to affect the operation of the Cardano Protocol. Th
 may be either updatable or non-updatable.
 Get the protocol parameters and save them to protocol.json with:
 
-.. code-block:: bash
+.. code-block::bash
   docker run --interactive \
     --env CARDANO_NODE_SOCKET_PATH=/node/node.socket \
     --volume /mnt/node-gen2-pool/main-relay:/node \
@@ -30,7 +30,7 @@ Get the protocol parameters and save them to protocol.json with:
  
 then Get the transaction hash and index of the UTXO to spend:
 
-.. code-block:: bash
+.. code-block::bash
   docker run --interactive \
     --env CARDANO_NODE_SOCKET_PATH=/node/node.socket \
     --volume /mnt/node-gen2-pool/main-relay:/node \
@@ -52,7 +52,7 @@ where TxOut is the hex encoded address followed by the amount in Lovelace.
 For the transaction draft --tx-out, --invalid-hereafter and --fee can be set 
 to zero.
 
-.. code-block:: bash
+.. code-block::bash
   docker run --interactive \
     --env CARDANO_NODE_SOCKET_PATH=/node/node.socket \
     --volume /mnt/node-gen2-pool/main-relay:/node \

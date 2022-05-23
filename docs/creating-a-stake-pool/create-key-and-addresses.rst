@@ -16,7 +16,7 @@ Payment key pair
 A payment key is used to send and receive transactions. To generate a payment 
 key pair:
 
-.. code-block:: bash
+.. code-block::bash
   docker run --interactive \
     --volume $PWD:/root \
     --workdir /root \
@@ -35,7 +35,7 @@ Stake key pair
 Stake key is used to control protocol participation, create a stake pool, delegate 
 and receive rewards. To generate a stake key pair:
 
-.. code-block:: bash
+.. code-block::bash
   docker run --interactive \
     --volume $PWD:/root \
     --workdir /root \
@@ -54,7 +54,7 @@ Payment address
 Both verification keys (payment.vkey and stake.vkey) are used to build the address 
 and the resulting payment address is associated with these keys.
 
-.. code-block:: bash
+.. code-block::bash
   docker run --interactive \
     --volume $PWD:/root \
     --workdir /root \
@@ -92,7 +92,7 @@ environment, it is a little a bit difficult because CLI and the node are running
 different containers. We have to use a volume and share it with these contaienrs.
 
 
-.. code-block:: bash
+.. code-block::bash
   docker run --interactive \
     --env CARDANO_NODE_SOCKET_PATH=/node/node.socket \
     --volume /mnt/node-gen2-pool/main-relay:/node \
@@ -106,7 +106,7 @@ different containers. We have to use a volume and share it with these contaienrs
 The result is:
 
 
-.. code-block:: bash
+.. code-block::bash
                              TxHash                                 TxIx        Amount
   --------------------------------------------------------------------------------------
 
