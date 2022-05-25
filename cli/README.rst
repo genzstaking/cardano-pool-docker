@@ -10,7 +10,7 @@ The general synopsis is as follows:
 .. code-blok:: bash
   
   docker run --interactive \
-     gen2-pool/cardano-cli \
+     genz-pool/cardano-cli \
          (Era based commands | Byron specific commands | Miscellaneous commands)
 
 > NOTE: the exact invocation command depends on the environment. If you 

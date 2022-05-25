@@ -22,7 +22,7 @@ Create a JSON file with your pool's metadata
 -------------------------------------------------------------------------------
 
 Store the file in the url you control. For example 
-`gen2-pool.json<https://raw.githubusercontent.com/gen2-pool/gen2-pool.github.io/main/metadata-cardano.json>`_. 
+`genz-pool.json<https://raw.githubusercontent.com/genz-pool/genz-pool.github.io/main/metadata-cardano.json>`_. 
 You can use a GIST in Github to store the definition and git.io to make it short. 
 Ensure that the Stake pool metadata consists of at most 512 bytes, with the URL
 being less than 65 characters long.
@@ -37,7 +37,7 @@ hash of your file:
   docker run --interactive \
     --volume $PWD:/root \
     --workdir /root \
-    gen2-pool/cardano-cli \
+    genz-pool/cardano-cli \
       stake-pool metadata-hash \
       --pool-metadata-file metadata-cardano.json
 

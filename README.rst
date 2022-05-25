@@ -6,7 +6,7 @@
 Welcome to cardano-pool-docker's documentation!
 ===============================================================================
 
-Visit gen2-pool stake pool @ [gen2-pool.com](https://gen2-pool.com/stakeing/cardano).
+Visit genz-pool stake pool @ [genz-pool.com](https://genz-pool.com/stakeing/cardano).
 
 From the official [cardano-node setup](https://docs.cardano.org/projects/cardano-node/en/latest/) tutorials 
 from IOHK.
@@ -23,7 +23,7 @@ Donate
 -------------------------------------------------------------------------------
 
 We hope you will find this project useful. If you like the work please consider 
-delegating to gen2-pool pool:
+delegating to genz-pool pool:
 
 `[ARRA] Arrakis (c65ca06828caa8fc9b0bb015af93ef71685544c6ed2abbb7c59b0e62)`
 

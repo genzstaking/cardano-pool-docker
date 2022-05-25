@@ -12,7 +12,7 @@ or just to customize the logic.
    :name: build-src
    :caption: Build docker images from source
 
-   git clone https://github.com/gen2-pool/cardano-node-docker.git
+   git clone https://github.com/genz-pool/cardano-node-docker.git
    cd cardano-node-docker
    make all
 
@@ -20,5 +20,5 @@ or just to customize the logic.
 Docker hub
 -------------------------------------------------------------------------------
 
-Image can be found `here <https://hub.docker.com/repository/docker/gen2-pool/cardano-pool-docker>`_.
+Image can be found `here <https://hub.docker.com/repository/docker/genz-pool/cardano-pool-docker>`_.
 

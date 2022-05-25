@@ -18,8 +18,8 @@
 # -- Project information -----------------------------------------------------
 
 project = 'Cardano Pool'
-copyright = '2022, gen2-pool.com'
-author = 'gen2-pool.com'
+copyright = '2022, genz-pool.com'
+author = 'genz-pool.com'
 
 # The full version, including alpha/beta/rc tags
 release = '0.1.0'

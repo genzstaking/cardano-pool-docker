@@ -65,7 +65,7 @@ To start a passive node:
    docker run --interactive \
     --volume /path/to/node:/node \
     --volume /path/to/config:/config \
-    gen2-pool/cardano-node run \
+    genz-pool/cardano-node run \
        --topology                 /config/mainnet-topology.json \
        --config                   /config/mainnet-config.json \
        --database-path            /node/db \

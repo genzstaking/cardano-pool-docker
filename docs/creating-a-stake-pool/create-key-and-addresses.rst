@@ -20,7 +20,7 @@ key pair:
   docker run --interactive \
     --volume $PWD:/root \
     --workdir /root \
-    gen2-pool/cardano-cli \
+    genz-pool/cardano-cli \
     address key-gen \
       --verification-key-file payment.vkey \
       --signing-key-file payment.skey
@@ -39,7 +39,7 @@ and receive rewards. To generate a stake key pair:
   docker run --interactive \
     --volume $PWD:/root \
     --workdir /root \
-    gen2-pool/cardano-cli \
+    genz-pool/cardano-cli \
     stake-address key-gen \
       --verification-key-file stake.vkey \
       --signing-key-file stake.skey
@@ -58,7 +58,7 @@ and the resulting payment address is associated with these keys.
   docker run --interactive \
     --volume $PWD:/root \
     --workdir /root \
-    gen2-pool/cardano-cli \
+    genz-pool/cardano-cli \
     address build \
       --payment-verification-key-file payment.vkey \
       --stake-verification-key-file stake.vkey \
@@ -75,7 +75,7 @@ To generate a stake address:
   docker run --interactive \
     --volume $PWD:/root \
     --workdir /root \
-    gen2-pool/cardano-cli \
+    genz-pool/cardano-cli \
     stake-address build \
       --stake-verification-key-file stake.vkey \
       --out-file stake.addr \
@@ -95,10 +95,10 @@ different containers. We have to use a volume and share it with these contaienrs
 .. code-block::bash
   docker run --interactive \
     --env CARDANO_NODE_SOCKET_PATH=/node/node.socket \
-    --volume /mnt/node-gen2-pool/main-relay:/node \
+    --volume /mnt/node-genz-pool/main-relay:/node \
     --volume $PWD:/root \
     --workdir /root \
-    gen2-pool/cardano-cli \
+    genz-pool/cardano-cli \
     query utxo \
       --address $(cat payment.addr) \
       --mainnet

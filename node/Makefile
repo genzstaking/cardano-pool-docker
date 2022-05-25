@@ -27,8 +27,8 @@ $(VERSIONS): force
 	@$(DOCKER_BUILD) Dockerfile \
 		--build-arg VERSION=$@ \
 		--build-arg LIBSODIUM_VERSION=${LIBSODIUM_VERSION} \
-		--tag gen2-pool/cardano-node:$@ \
-		--tag gen2-pool/cardano-node:latest .
+		--tag genz-pool/cardano-node:$@ \
+		--tag genz-pool/cardano-node:latest .
 
 
 

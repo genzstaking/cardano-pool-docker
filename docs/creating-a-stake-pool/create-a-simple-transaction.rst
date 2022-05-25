@@ -19,10 +19,10 @@ Get the protocol parameters and save them to protocol.json with:
 .. code-block::bash
   docker run --interactive \
     --env CARDANO_NODE_SOCKET_PATH=/node/node.socket \
-    --volume /mnt/node-gen2-pool/main-relay:/node \
+    --volume /mnt/node-genz-pool/main-relay:/node \
     --volume $PWD:/root \
     --workdir /root \
-    gen2-pool/cardano-cli \
+    genz-pool/cardano-cli \
       query protocol-parameters \
         --mainnet \
         --out-file protocol.json
@@ -33,10 +33,10 @@ then Get the transaction hash and index of the UTXO to spend:
 .. code-block::bash
   docker run --interactive \
     --env CARDANO_NODE_SOCKET_PATH=/node/node.socket \
-    --volume /mnt/node-gen2-pool/main-relay:/node \
+    --volume /mnt/node-genz-pool/main-relay:/node \
     --volume $PWD:/root \
     --workdir /root \
-    gen2-pool/cardano-cli \
+    genz-pool/cardano-cli \
       query utxo \
         --address $(cat payment.addr) \
         --mainnet
@@ -55,10 +55,10 @@ to zero.
 .. code-block::bash
   docker run --interactive \
     --env CARDANO_NODE_SOCKET_PATH=/node/node.socket \
-    --volume /mnt/node-gen2-pool/main-relay:/node \
+    --volume /mnt/node-genz-pool/main-relay:/node \
     --volume $PWD:/root \
     --workdir /root \
-    gen2-pool/cardano-cli \
+    genz-pool/cardano-cli \
       transaction build-raw \
       --tx-in 4e3a6e7fdcb0d0efa17bf79c13aed2b4cb9baf37fb1aa2e39553d5bd720c5c99#4 \
       --tx-out $(cat payment2.addr)+0 \
