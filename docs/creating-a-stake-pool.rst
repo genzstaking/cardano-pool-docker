@@ -41,4 +41,10 @@ pool. I use docker as the basic tools in all steps:
    creating-a-stake-pool/getting-configuration-files.rst
    creating-a-stake-pool/create-key-and-addresses.rst
    creating-a-stake-pool/create-a-simple-transaction.rst
+   creating-a-stake-pool/cregister-stake-address-on-the-blockchain.rst
+   
+   
+   creating-a-stake-pool/registering-a-stake-pool-with-metadata.rst
+
+
 

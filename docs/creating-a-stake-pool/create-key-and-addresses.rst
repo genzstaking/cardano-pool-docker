@@ -91,7 +91,6 @@ variable CARDANO_NODE_SOCKET_PATH set to the path of the node.socket. In the doc
 environment, it is a little a bit difficult because CLI and the node are running in
 different containers. We have to use a volume and share it with these contaienrs.
 
-
 .. code-block::bash
   docker run --interactive \
     --env CARDANO_NODE_SOCKET_PATH=/node/node.socket \
@@ -105,11 +104,9 @@ different containers. We have to use a volume and share it with these contaienrs
 
 The result is:
 
-
 .. code-block::bash
                              TxHash                                 TxIx        Amount
   --------------------------------------------------------------------------------------
-
 
 NOTE: Ensure that your node has synced to the current block height which can be 
 checked at explorer.cardano.org. If it is not, you may see an error referring 

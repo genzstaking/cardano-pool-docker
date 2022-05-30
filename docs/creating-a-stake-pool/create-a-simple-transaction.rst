@@ -41,7 +41,6 @@ then Get the transaction hash and index of the UTXO to spend:
         --address $(cat payment.addr) \
         --mainnet
 
-
 Draft the transaction
 -------------------------------------------------------------------------------
 Create a draft for the transaction and save it in tx.draft
