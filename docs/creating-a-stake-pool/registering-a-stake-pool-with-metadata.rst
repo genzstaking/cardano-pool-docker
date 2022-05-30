@@ -20,9 +20,8 @@ To register your stake pool you will need to:
 
 Create a JSON file with your pool's metadata
 -------------------------------------------------------------------------------
-
 Store the file in the url you control. For example 
-`genz-pool.json<https://raw.githubusercontent.com/genz-pool/genz-pool.github.io/main/metadata-cardano.json>`_. 
+`genz-pool.json <https://raw.githubusercontent.com/genz-pool/genz-pool.github.io/main/metadata-cardano.json>`_. 
 You can use a GIST in Github to store the definition and git.io to make it short. 
 Ensure that the Stake pool metadata consists of at most 512 bytes, with the URL
 being less than 65 characters long.
@@ -33,7 +32,8 @@ Get the hash of your metadata JSON file
 This validates that JSON fits the required schema, if it does, you will get the 
 hash of your file:
 
-.. code-block::bash
+.. code-block:: bash
+
   docker run --interactive \
     --volume $PWD:/root \
     --workdir /root \
@@ -43,7 +43,8 @@ hash of your file:
 
 Which the output is:
 
-.. code-block::bash
+.. code-block:: bash
+
     >4d43c7e7a6271f33069888c5aca1e42737e27925028eb458d90aed5cc7719bcf
 
 Register your relay nodes on-chain
@@ -64,7 +65,8 @@ is strong inter-region connectivity.
 To register your relay nodes during the creation of the pool registration certificate,
 specify their IP addresses and/or domain name using: 
 
-.. code-block::bash
+.. code-block:: bash
+
   --pool-relay-ipv4 <IPADDRESS>
   --single-host-pool-relay <DOMAIN_NAME>
 
@@ -96,13 +98,13 @@ Here is more detail about parameters.
 
 .. csv-table:: Table Title
    :file: assets/register-node-register-cert-parameters.csv
-   :widths: 30, 70
    :header-rows: 1
 
 
-**You can use a different key for the rewards, and you can provide more than one owner key if there were multiple owners who share the pledge.**
+You can use a different key for the rewards, and you can provide more than one owner key if 
+there were multiple owners who share the pledge.
 
-The **pool-registration.cert** file should look like this:
+The pool-registration.cert file should look like this:
 
 
     type: CertificateShelley
@@ -117,7 +119,7 @@ The **pool-registration.cert** file should look like this:
 Generate delegation certificate pledge
 -------------------------------------------------------------------------------
 
-To honor your pledge, create a _delegation certificate_:
+To honor your pledge, create a delegation certificate:
 
     cardano-cli stake-address delegation-certificate \
     --stake-verification-key-file stake.vkey \
@@ -129,7 +131,9 @@ This creates a delegation certificate which delegates funds from all stake addre
 Submit the pool certificate and delegation certificate to the blockchain
 -------------------------------------------------------------------------------
 
-To submit the `pool registration certificate` and the `delegation certificates` to the blockchain, include them in one or more transactions. We can use one transaction for multiple certificates, the certificates will be applied in order.
+To submit the `pool registration certificate` and the `delegation certificates` 
+to the blockchain, include them in one or more transactions. We can use one 
+transaction for multiple certificates, the certificates will be applied in order.
 
 Draft the transaction
 -------------------------------------------------------------------------------
@@ -159,7 +163,8 @@ For example:
 
     > 184685
 
-Registering a stake pool requires a deposit. This amount is specified in `protocol.json`. For example, for Shelley Mainnet we have:
+Registering a stake pool requires a deposit. This amount is specified in `protocol.json`. 
+For example, for Shelley Mainnet we have:
 
 "poolDeposit": 500000000
 

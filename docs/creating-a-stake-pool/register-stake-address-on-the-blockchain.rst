@@ -14,7 +14,8 @@ Create a registration certificate
 -------------------------------------------------------------------------------
 The first step is to create a certificate.
 
-.. code-block::bash
+.. code-block:: bash
+
   docker run --interactive \
     --volume /mnt/node-genz-pool/main-relay:/node \
     --volume $PWD:/root \
@@ -30,7 +31,8 @@ Draft transaction
 For the transaction draft, --tx.out, --invalid-hereafter and --fee can be set to 
 zero.
 
-.. code-block::bash
+.. code-block:: bash
+
   docker run --interactive \
     --env CARDANO_NODE_SOCKET_PATH=/node/node.socket \
     --volume /mnt/node-genz-pool/main-relay:/node \
@@ -49,7 +51,8 @@ Calculate fees
 -------------------------------------------------------------------------------
 
 
-.. code-block::bash
+.. code-block:: bash
+
   docker run --interactive \
     --env CARDANO_NODE_SOCKET_PATH=/node/node.socket \
     --volume /mnt/node-genz-pool/main-relay:/node \
@@ -69,6 +72,7 @@ The output is the transaction fee in lovelace:
 
 
 .. code-block::bash
+
     > 171485
 
 Registering the stake address, not only pay transaction fees, but also includes a 
@@ -78,12 +82,14 @@ parameters:
 The deposit amount can be found in the `protocol.json` under `stakeAddressDeposit`, 
 for example in Shelley Mainnet:
 
-.. code-block::json
+.. code-block:: json
+
     "stakeAddressDeposit": 2000000,
     
 Query the UTXO of the address that pays for the transaction and deposit:
 
-.. code-block::bash
+.. code-block:: bash
+
   docker run --interactive \
     --env CARDANO_NODE_SOCKET_PATH=/node/node.socket \
     --volume /mnt/node-genz-pool/main-relay:/node \
@@ -99,9 +105,10 @@ Query the UTXO of the address that pays for the transaction and deposit:
     > b64ae44e1195b04663ab863b62337e626c65b0c9855a9fbb9ef4458f81a6f5ee     1      1000000000 lovelace
 
 Calculate the change to send back to payment address after including the deposit
--------------------------------------------------------------------------------
+-----------------------------------------------------------------------------------
 
-.. code-block::bash
+.. code-block:: bash
+
   expr 1000000000 - 171485 - 2000000
   > 997828515
 
@@ -109,7 +116,8 @@ Submit the certificate with a transaction:
 -------------------------------------------------------------------------------
 Build the transaction, this time include  --invalid-hereafter and --fee
 
-.. code-block::bash
+.. code-block:: bash
+
   docker run --interactive \
     --env CARDANO_NODE_SOCKET_PATH=/node/node.socket \
     --volume /mnt/node-genz-pool/main-relay:/node \
@@ -126,7 +134,8 @@ Build the transaction, this time include  --invalid-hereafter and --fee
 
 Sign it:
 
-.. code-block::bash
+.. code-block:: bash
+
   docker run --interactive \
     --env CARDANO_NODE_SOCKET_PATH=/node/node.socket \
     --volume /mnt/node-genz-pool/main-relay:/node \
@@ -142,7 +151,8 @@ Sign it:
 
 And submit it:
 
-.. code-block::bash
+.. code-block:: bash
+
   docker run --interactive \
     --env CARDANO_NODE_SOCKET_PATH=/node/node.socket \
     --volume /mnt/node-genz-pool/main-relay:/node \

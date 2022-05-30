@@ -39,6 +39,7 @@ or donating a few ADA to:
    install
    node/README
    cli/README
+   docs/creating-a-stake-pool.rst
    support
 
 
