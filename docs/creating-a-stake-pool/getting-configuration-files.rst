@@ -80,6 +80,29 @@ To start a passive node:
 NOTE: Replace x.x.x.x with your public IP and indicate the correct paths to the 
 required files.
 
+for example:
+
+.. code-block:: bash
+
+   docker run --interactive \
+    --volume /mnt/genz-cardano/main-relay:/node \
+    --volume /mnt/genz-cardano/config:/config \
+    genz-pool/cardano-node run \
+       --topology                 /config/mainnet-topology.json \
+       --config                   /config/mainnet-config.json \
+       --database-path            /node/db \
+       --socket-path              /node/node.socket \
+       --host-addr                127.0.0.1 \
+       --port                     3001 
+
+To list all options in run command use the following code:
+
+.. code-block:: bash
+
+   docker run --interactive \
+    genz-pool/cardano-node \
+      run --help
+
 Many commands rely on the environment variable CARDANO_NODE_SOCKET_PATH which points
 to the Linux socket related to the node. You make use this variable in other contaienrs
 as:
@@ -93,7 +116,11 @@ be increasing.
 
 .. code-block:: bash
 
-    cardano-cli query tip --mainnet
+   docker run --interactive \
+     -e CARDANO_NODE_SOCKET_PATH=/node/node.socket \
+     --volume /mnt/genz-cardano/main-relay:/node \
+     genz-pool/cardano-cli \
+       query tip --mainnet
 
 Where the result would be:
 

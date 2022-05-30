@@ -17,7 +17,7 @@ The first step is to create a certificate.
 .. code-block:: bash
 
   docker run --interactive \
-    --volume /mnt/node-genz-pool/main-relay:/node \
+    --volume /mnt/genz-cardano/main-relay:/node \
     --volume $PWD:/root \
     --workdir /root \
     genz-pool/cardano-cli \
@@ -35,7 +35,7 @@ zero.
 
   docker run --interactive \
     --env CARDANO_NODE_SOCKET_PATH=/node/node.socket \
-    --volume /mnt/node-genz-pool/main-relay:/node \
+    --volume /mnt/genz-cardano/main-relay:/node \
     --volume $PWD:/root \
     --workdir /root \
     genz-pool/cardano-cli \
@@ -55,7 +55,7 @@ Calculate fees
 
   docker run --interactive \
     --env CARDANO_NODE_SOCKET_PATH=/node/node.socket \
-    --volume /mnt/node-genz-pool/main-relay:/node \
+    --volume /mnt/genz-cardano/main-relay:/node \
     --volume $PWD:/root \
     --workdir /root \
     genz-pool/cardano-cli \
@@ -92,7 +92,7 @@ Query the UTXO of the address that pays for the transaction and deposit:
 
   docker run --interactive \
     --env CARDANO_NODE_SOCKET_PATH=/node/node.socket \
-    --volume /mnt/node-genz-pool/main-relay:/node \
+    --volume /mnt/genz-cardano/main-relay:/node \
     --volume $PWD:/root \
     --workdir /root \
     genz-pool/cardano-cli \
@@ -120,7 +120,7 @@ Build the transaction, this time include  --invalid-hereafter and --fee
 
   docker run --interactive \
     --env CARDANO_NODE_SOCKET_PATH=/node/node.socket \
-    --volume /mnt/node-genz-pool/main-relay:/node \
+    --volume /mnt/genz-cardano/main-relay:/node \
     --volume $PWD:/root \
     --workdir /root \
     genz-pool/cardano-cli \
@@ -138,7 +138,7 @@ Sign it:
 
   docker run --interactive \
     --env CARDANO_NODE_SOCKET_PATH=/node/node.socket \
-    --volume /mnt/node-genz-pool/main-relay:/node \
+    --volume /mnt/genz-cardano/main-relay:/node \
     --volume $PWD:/root \
     --workdir /root \
     genz-pool/cardano-cli \
@@ -155,7 +155,7 @@ And submit it:
 
   docker run --interactive \
     --env CARDANO_NODE_SOCKET_PATH=/node/node.socket \
-    --volume /mnt/node-genz-pool/main-relay:/node \
+    --volume /mnt/genz-cardano/main-relay:/node \
     --volume $PWD:/root \
     --workdir /root \
     genz-pool/cardano-cli \

@@ -99,7 +99,7 @@ different containers. We have to use a volume and share it with these contaienrs
 
   docker run --interactive \
     --env CARDANO_NODE_SOCKET_PATH=/node/node.socket \
-    --volume /mnt/node-genz-pool/main-relay:/node \
+    --volume /mnt/genz-cardano/main-relay:/node \
     --volume $PWD:/root \
     --workdir /root \
     genz-pool/cardano-cli \
