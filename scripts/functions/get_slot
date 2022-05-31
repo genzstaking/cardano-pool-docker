@@ -1,0 +1,13 @@
+#!/bin/bash
+
+SRC_DIR=$( dirname -- "$0"; )
+source "${SRC_DIR}/../init_node_vars"
+
+SLOT=$(docker run --interactive \
+    --env CARDANO_NODE_SOCKET_PATH=/node/node.socket \
+    --volume /mnt/genz-cardano/main-relay:/node \
+    --volume $PWD:/root \
+    --workdir /root \
+    genz-pool/cardano-cli \
+      query tip --mainnet | jq -r '.slot')
+echo "${SLOT}"

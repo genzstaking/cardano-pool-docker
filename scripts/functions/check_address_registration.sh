@@ -1,0 +1,7 @@
+function check_address_registration {
+    source /scripts/init_node_vars
+    STAKE_ADDR=$1
+    if [ ! "$(cardano-cli query stake-address-info --address ${STAKE_ADDR} ${NETWORK_ARGUMENT})" == "[]" ]; then
+        echo "1"
+    fi
+}

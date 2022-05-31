@@ -1,0 +1,13 @@
+#!/bin/bash
+
+function info_pane {
+    source /scripts/init_node_vars
+    source /scripts/functions/wait_for_sync
+    
+    wait_for_sync 99.98
+
+    while true; do
+        sync_status
+        sleep 60
+    done
+}

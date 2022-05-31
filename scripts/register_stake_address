@@ -1,0 +1,160 @@
+#!/bin/bash
+
+# From Documentation
+# https://github.com/input-output-hk/cardano-tutorials/blob/master/node-setup/040_transactions.md
+# https://github.com/input-output-hk/cardano-tutorials/blob/master/node-setup/050_register_key.md
+
+# Init functions and vars
+SRC_DIR=$( dirname -- "$0"; )
+source "${SRC_DIR}/functions/check_balance.sh"
+source "${SRC_DIR}/functions/check_address_registration.sh"
+source "${SRC_DIR}/functions/wait_for_address_registration.sh"
+source "${SRC_DIR}/functions/wait_for_slot.sh"
+source "${SRC_DIR}/functions/wait_for_sync.sh"
+source "${SRC_DIR}/init_node_vars.sh"
+
+# Enter staking directory
+STAKE_ADDR="stake.addr"
+
+echo ""
+echo "Submitting staking addresses to the blockchain."
+
+# Check for required files
+if [ ! -f "stake.vkey" ]; then
+    echo "Missing required stake.vkey. You need to run \`generate_wallet \` to generate this key."
+    MISSING_FILES=1
+fi
+
+if [ ! -f "stake.skey" ]; then
+    echo "Missing required stake.skey. You need to run \`generate_wallet \` to generate this key."
+    MISSING_FILES=1
+fi
+
+if [ ! -f "payment.skey" ]; then
+    echo "Missing required payment.skey. You need to run \`generate_wallet \` to generate this key."
+    MISSING_FILES=1
+fi
+
+if [ ! -f "payment.addr" ]; then
+    echo "Missing required payment.addr. You need to run \`generate_wallet \` to generate this key."
+    MISSING_FILES=1
+fi
+
+if [ -n "$MISSING_FILES" ]; then
+    exit
+fi
+
+# Handle arguments
+for i in "$@"; do
+    case $i in
+        --cold-create)
+            COLD_CREATE=1
+        ;;
+    esac
+done
+
+mkdir -p transactions
+
+
+# Create an address registration certificate
+if [ ! -f "stake.cert" ]; then
+    cardano-cli stake-address registration-certificate \
+        --staking-verification-key-file stake.vkey \
+        --out-file stake.cert
+    echo "Created stake.cert"
+else
+    echo "stake.cert certificate already exists."
+fi
+
+# Generate protocol
+cardano-cli query protocol-parameters \
+    --mainnet \
+    --out-file protocol.json
+
+
+# Get key-deposit
+KEY_DEPOSIT=$(jq -r .stakeAddressDeposit protocol.json)
+
+# Find UTXO in address with enough lovelace to do the transaction
+ADDRESS=$(cat payment.addr)
+check_balance ${KEY_DEPOSIT}
+
+# Draft transaction
+cardano-cli transaction build-raw \
+    --tx-in "${UTXO}#${TXIX}" \
+    --tx-out ${ADDRESS}+0 \
+    --ttl 0 \
+    --fee 0 \
+    --out-file transactions/register_stake_address.draft \
+    --certificate-file stake.cert
+
+# Calculate fees
+FEE=$(cardano-cli transaction calculate-min-fee \
+    --tx-body-file transactions/register_stake_address.draft \
+    --tx-in-count 1 \
+    --tx-out-count 1 \
+    --witness-count 1 \
+    --byron-witness-count 0 \
+    --mainnet \
+    --protocol-params-file protocol.json | tr ' ' '\n' | head -1)
+
+TOTAL_PRICE=$(expr ${FEE} + ${KEY_DEPOSIT})
+echo "Fee is: ${FEE} Lovelace"
+echo "Key-Deposit: ${KEY_DEPOSIT} Lovelace"
+echo "Total Price is: ${TOTAL_PRICE}"
+
+# Find UTXO in address with enough lovelace to do the transaction
+check_balance ${TOTAL_PRICE}
+SLOT=$(get_slot)
+
+# Get slot and TTL
+TTL=$(expr ${SLOT} + 500)
+
+# Display transaction info
+REMAINING_AFTER_TX=$(expr ${LOVELACE} - ${TOTAL_PRICE})
+echo "Creating transaction"
+echo "Lovelace after transaction: ${REMAINING_AFTER_TX}"
+echo "Current slot: ${SLOT}"
+echo "TTL: ${TTL}"
+
+#
+# Create the transaction
+#
+cardano-cli transaction build-raw \
+    --tx-in "${UTXO}#${TXIX}" \
+    --tx-out ${ADDRESS}+${REMAINING_AFTER_TX} \
+    --ttl ${TTL} \
+    --fee ${FEE} \
+    --out-file transactions/register_stake_address.raw \
+    --certificate-file stake.cert
+
+# Sign the transaction
+cardano-cli transaction sign \
+    --tx-body-file transactions/register_stake_address.raw \
+    --signing-key-file payment.skey \
+    --signing-key-file stake.skey \
+    --mainnet \
+    --out-file transactions/register_stake_address.signed
+
+
+# Submit the transaction
+read -n 1 -r -s -p $'Press enter to submit the stake address certificate...\n'
+
+OUT=$(cardano-cli transaction submit \
+    --tx-file transactions/register_stake_address.signed \
+    --mainnet 2>&1)
+
+if [[ $OUT =~ "Error" ]]
+then
+    echo "An error occoured."
+    echo ${OUT}
+    read
+else
+    echo "Transaction has been submitted to the blockchain."
+    echo ${OUT}
+
+    # Wait for blockchain to register the address
+    wait_for_address_registration ${STAKE_ADDR}
+    echo "Your stake address is now registered in the blockchain."
+    touch transactions/register_stake_address.submitted
+fi
