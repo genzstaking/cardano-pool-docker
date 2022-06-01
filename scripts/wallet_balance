@@ -18,7 +18,7 @@ if [[ "${WAIT_FOR_SYNC}" == "True" ]]; then
    exit 1
 fi
 
-ADDRESS=$(cat "${WORK_DIR}/staking/wallets/${name}/payment.addr")
+ADDRESS=$(cat "${WORK_DIR}/wallets/${name}/payment.addr")
 
 docker run --interactive \
     --env CARDANO_NODE_SOCKET_PATH=/node/node.socket \
