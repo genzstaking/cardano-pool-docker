@@ -54,7 +54,7 @@ function check_balance {
         echo "${ADDRESS}"
         echo ""
         echo "If you have funded your address, you need to wait for the transaction to be processed and your node to synchronize."
-        ./sync_status
+        ${SRC_DIR}/functions/sync_status"
         echo ""
 
         sleep 10
