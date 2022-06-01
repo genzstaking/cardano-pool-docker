@@ -25,7 +25,7 @@ if [ ! -d "$walletFolder" ]; then
 fi
 
 # Enter staking directory
-STAKE_ADDR=$(cat ${walletFolder}/stake.addr)
+STAKE_ADDR=$(cat "${walletFolder}/stake.addr")
 
 echo ""
 echo "Submitting staking addresses for $name to the blockchain."

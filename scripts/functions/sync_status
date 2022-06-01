@@ -1,11 +1,11 @@
 #!/bin/bash
 # Thanks to Smaug from https://t.me/CardanoStakePoolWorkgroup
 
-source /scripts/functions/wait_for_socket
+source "${SRC_DIR}/functions/wait_for_socket"
 wait_for_socket
 
-GENESIS=${NODE_PATH}/shelley-genesis.json
-BYRON_GENESIS=${NODE_PATH}/byron-genesis.json
+GENESIS="${WORK_DIR}/config/${CARDANO_NETWORK}-shelley-genesis.json"
+BYRON_GENESIS="${WORK_DIR}/config/${CARDANO_NETWORK}/byron-genesis.json"
 
 epoch_length=$(jq -r .epochLength $GENESIS)
 slot_length=$(jq -r .slotLength $GENESIS)
