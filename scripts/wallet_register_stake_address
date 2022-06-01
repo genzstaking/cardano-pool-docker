@@ -7,102 +7,89 @@
 # Init functions and vars
 
 source "${SRC_DIR}/functions/check_balance"
-source "${SRC_DIR}/functions/check_address_registration"
-source "${SRC_DIR}/functions/wait_for_address_registration"
-source "${SRC_DIR}/functions/wait_for_slot"
-source "${SRC_DIR}/functions/wait_for_sync"
-source "${SRC_DIR}/init_node_vars"
+#source "${SRC_DIR}/functions/check_address_registration"
+#source "${SRC_DIR}/functions/wait_for_address_registration"
+#source "${SRC_DIR}/functions/wait_for_slot"
+#source "${SRC_DIR}/functions/wait_for_sync"
+#source "${SRC_DIR}/init_node_vars"
 
 # Define wallet
-WALLET=$1
+if [ -z "$name" ]; then
+	export name="main"
+fi
 
-if [ -z "$WALLET" ]; then
-    echo "Wallet is undefined."
-    exit
+walletFolder="${WORK_DIR}/wallets/${name}"
+if [ ! -d "$walletFolder" ]; then
+	echo "Wallet not found. Use \' wallet create --name $name \' to create a new one"
+	exit 3 # TODO: replace with error code
 fi
 
 # Enter staking directory
-cd ${NODE_PATH}/staking/wallets/${WALLET}
-STAKE_ADDR=$(cat ${NODE_PATH}/staking/wallets/${WALLET}/stake.addr)
+STAKE_ADDR=$(cat ${walletFolder}/stake.addr)
 
 echo ""
-echo "Submitting staking addresses for $WALLET to the blockchain."
+echo "Submitting staking addresses for $name to the blockchain."
 
 # Check for required files
-if [ ! -f "stake.vkey" ]; then
-    echo "Missing required wallets/${WALLET}/stake.vkey. You need to run \`generate_wallet ${WALLET}\` to generate this key."
-    MISSING_FILES=1
-fi
-
-if [ ! -f "stake.skey" ]; then
-    echo "Missing required wallets/${WALLET}/stake.skey. You need to run \`generate_wallet ${WALLET}\` to generate this key."
-    MISSING_FILES=1
-fi
-
-if [ ! -f "payment.skey" ]; then
-    echo "Missing required wallets/${WALLET}/payment.skey. You need to run \`generate_wallet ${WALLET}\` to generate this key."
-    MISSING_FILES=1
-fi
-
-if [ ! -f "payment.addr" ]; then
-    echo "Missing required wallets/${WALLET}/payment.addr. You need to run \`generate_wallet ${WALLET}\` to generate this key."
-    MISSING_FILES=1
-fi
-
-if [ -n "$MISSING_FILES" ]; then
-    exit
-fi
-
-# Handle arguments
-for i in "$@"; do
-    case $i in
-        --cold-create)
-            COLD_CREATE=1
-        ;;
-    esac
+files=( \
+ "stake.vkey" \
+ "stake.skey" \
+ "payment.skey" \
+ "payment.addr" \
+)
+for file in "${files[@]}"
+do 
+	if [ ! -f "${walletFolder}/${file}" ]; then
+		echo ${walletFolder}/$file	
+	    echo "Missing required ${file}. You need to run \`wallet create ${name}\` to generate this key."
+	    exit 3 # TODO: replace with error code
+	fi
 done
 
-mkdir -p transactions
+transFolder="${walletFolder}/transactions"
+mkdir -p "$transFolder"
 
-# Wait for node to sync
-if [[ "${WAIT_FOR_SYNC}" == "True" ]]; then
-    wait_for_sync 99.90
-fi
+# TODO: maso, 2022: Wait for node to sync
+#if [[ "${WAIT_FOR_SYNC}" == "True" ]]; then
+#    wait_for_sync 99.90
+#fi
 
-if [ -z "$COLD_CREATE" ]; then
-    if [ -n "$(check_address_registration ${STAKE_ADDR})" ]; then
-        echo "Your stake address has already been registered in the blockchain."
-        touch transactions/register_stake_address.submitted
-        exit
-    fi
-fi
+#if [ -z "$COLD_CREATE" ]; then
+#    if [ -n "$(check_address_registration ${STAKE_ADDR})" ]; then
+#        echo "Your stake address has already been registered in the blockchain."
+#        touch transactions/register_stake_address.submitted
+#        exit
+#    fi
+#fi
 
 # Create an address registration certificate
-if [ ! -f "stake.cert" ]; then
-    cardano-cli stake-address registration-certificate \
-        --staking-verification-key-file stake.vkey \
-        --out-file stake.cert
+if [ ! -f "${walletFolder}/stake.cert" ]; then
+	docker run --interactive \
+	    --volume ${walletFolder}:/root \
+	    --workdir /root \
+	    genzbank/cardano-cli \
+    	stake-address registration-certificate \
+        	--staking-verification-key-file stake.vkey \
+        	--out-file stake.cert
     echo "Created stake.cert"
 else
     echo "stake.cert certificate already exists."
 fi
 
 # Generate protocol
-if [ -z "$COLD_CREATE" ]; then
-    cardano-cli query protocol-parameters \
-        ${NETWORK_ARGUMENT} \
-        --out-file ${NODE_PATH}/staking/protocol.json
-else
-    if [ ! -f "${NODE_PATH}/staking/protocol.json" ]; then
-        read -n 1 -r -s -p "Missing ${NODE_PATH}/staking/protocol.json. You must transfer this file from an online node. Press ENTER when you have placed the file and are ready to continue."
-    fi
-fi
+docker run --interactive \
+    --volume ${walletFolder}:/root \
+    --workdir /root \
+    genzbank/cardano-cli \
+	query protocol-parameters \
+    	${NETWORK_ARGUMENT} \
+    	--out-file protocol.json
 
 # Get key-deposit
-KEY_DEPOSIT=$(jq -r .stakeAddressDeposit ${NODE_PATH}/staking/protocol.json)
+KEY_DEPOSIT=$(jq -r .stakeAddressDeposit "${walletFolder}/protocol.json")
 
 # Find UTXO in address with enough lovelace to do the transaction
-ADDRESS=$(cat payment.addr)
+ADDRESS=$(cat "${walletFolder}/payment.addr")
 check_balance ${KEY_DEPOSIT}
 
 # Draft transaction

@@ -11,9 +11,17 @@ function check_balance {
         echo ""
 
         TOTAL_LOVELACE=0
-        cardano-cli query utxo ${NETWORK_ARGUMENT} --address ${ADDRESS}
+        
+		output=$(docker run --interactive \
+		    --env CARDANO_NODE_SOCKET_PATH=/node/node.socket \
+		    --volume "${WORK_DIR}/${CARDANO_NETWORK}-relay:/node" \
+		    --volume $WORK_DIR:/root \
+		    --workdir /root \
+		    genzbank/cardano-cli \
+	        	query utxo ${NETWORK_ARGUMENT} \
+	        	--address ${ADDRESS})
 
-        UTXOS=$(cardano-cli query utxo ${NETWORK_ARGUMENT} --address ${ADDRESS} | tail -n +3)
+        UTXOS=$(echo $output | tail -n +3)
         echo "UTXO#TXIX: LOVELACE"
         while IFS= read -r line ; do
             arr=(${line})

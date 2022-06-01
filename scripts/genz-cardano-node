@@ -43,6 +43,12 @@ case "$1" in
 			export subOptions=""
 			shift
 			;;
+		registerStakeAddress)
+			export subcommand=$1
+			export subLongOptions=""
+			export subOptions=""
+			shift
+			;;
 		esac
 		;;
 	pooltool|node|cli)
@@ -119,6 +125,10 @@ if [[ $command == "wallet" ]]; then
 		;;
 	balance)
 		"${SRC_DIR}/wallet_balance"
+		exit 0
+		;;
+	registerStakeAddress)
+		"${SRC_DIR}/wallet_register_stake_address"
 		exit 0
 		;;
 	esac
