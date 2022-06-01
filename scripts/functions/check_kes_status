@@ -1,3 +1,5 @@
+#!/bin/bash
+
 function check_kes_status {
     source /scripts/init_node_vars
     source ${NODE_PATH}/staking/pool-keys/KESPERIOD

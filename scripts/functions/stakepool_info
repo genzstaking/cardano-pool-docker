@@ -1,3 +1,5 @@
+#!/bin/bash
+
 function stakepool_info {
     if [ -f "${NODE_PATH}/staking/metadata.json" ]; then
         METADATA=${NODE_PATH}/staking/metadata.json

@@ -1,3 +1,10 @@
+#!/bin/bash
+
 function init_config {
-    python3 /scripts/init_config.py
+    #python3 "${CARDANO_POOL_DOCKER_HOME}/scripts/init_config.py"
 }
+
+# Init config on first run
+if [[ ! -f "${NODE_PATH}/VARS" || "$REPLACE_EXISTING_CONFIG" == "True" ]]; then
+    init_config
+fi

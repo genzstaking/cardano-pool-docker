@@ -1,3 +1,5 @@
+#!/bin/bash
+
 function check_pool_registration {
     source /scripts/init_node_vars
 

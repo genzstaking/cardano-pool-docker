@@ -1,3 +1,5 @@
+#!/bin/bash
+
 function wait_for_slot {
     WAIT_FOR_SLOT=$1
 

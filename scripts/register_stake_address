@@ -5,38 +5,48 @@
 # https://github.com/input-output-hk/cardano-tutorials/blob/master/node-setup/050_register_key.md
 
 # Init functions and vars
+
 SRC_DIR=$( dirname -- "$0"; )
-source "${SRC_DIR}/functions/check_balance.sh"
-source "${SRC_DIR}/functions/check_address_registration.sh"
-source "${SRC_DIR}/functions/wait_for_address_registration.sh"
-source "${SRC_DIR}/functions/wait_for_slot.sh"
-source "${SRC_DIR}/functions/wait_for_sync.sh"
-source "${SRC_DIR}/init_node_vars.sh"
+source "${SRC_DIR}/functions/check_balance"
+source "${SRC_DIR}/functions/check_address_registration"
+source "${SRC_DIR}/functions/wait_for_address_registration"
+source "${SRC_DIR}/functions/wait_for_slot"
+source "${SRC_DIR}/functions/wait_for_sync"
+source "${SRC_DIR}/init_node_vars"
+
+# Define wallet
+WALLET=$1
+
+if [ -z "$WALLET" ]; then
+    echo "Wallet is undefined."
+    exit
+fi
 
 # Enter staking directory
-STAKE_ADDR="stake.addr"
+cd ${NODE_PATH}/staking/wallets/${WALLET}
+STAKE_ADDR=$(cat ${NODE_PATH}/staking/wallets/${WALLET}/stake.addr)
 
 echo ""
-echo "Submitting staking addresses to the blockchain."
+echo "Submitting staking addresses for $WALLET to the blockchain."
 
 # Check for required files
 if [ ! -f "stake.vkey" ]; then
-    echo "Missing required stake.vkey. You need to run \`generate_wallet \` to generate this key."
+    echo "Missing required wallets/${WALLET}/stake.vkey. You need to run \`generate_wallet ${WALLET}\` to generate this key."
     MISSING_FILES=1
 fi
 
 if [ ! -f "stake.skey" ]; then
-    echo "Missing required stake.skey. You need to run \`generate_wallet \` to generate this key."
+    echo "Missing required wallets/${WALLET}/stake.skey. You need to run \`generate_wallet ${WALLET}\` to generate this key."
     MISSING_FILES=1
 fi
 
 if [ ! -f "payment.skey" ]; then
-    echo "Missing required payment.skey. You need to run \`generate_wallet \` to generate this key."
+    echo "Missing required wallets/${WALLET}/payment.skey. You need to run \`generate_wallet ${WALLET}\` to generate this key."
     MISSING_FILES=1
 fi
 
 if [ ! -f "payment.addr" ]; then
-    echo "Missing required payment.addr. You need to run \`generate_wallet \` to generate this key."
+    echo "Missing required wallets/${WALLET}/payment.addr. You need to run \`generate_wallet ${WALLET}\` to generate this key."
     MISSING_FILES=1
 fi
 
@@ -55,6 +65,18 @@ done
 
 mkdir -p transactions
 
+# Wait for node to sync
+if [[ "${WAIT_FOR_SYNC}" == "True" ]]; then
+    wait_for_sync 99.90
+fi
+
+if [ -z "$COLD_CREATE" ]; then
+    if [ -n "$(check_address_registration ${STAKE_ADDR})" ]; then
+        echo "Your stake address has already been registered in the blockchain."
+        touch transactions/register_stake_address.submitted
+        exit
+    fi
+fi
 
 # Create an address registration certificate
 if [ ! -f "stake.cert" ]; then
@@ -67,13 +89,18 @@ else
 fi
 
 # Generate protocol
-cardano-cli query protocol-parameters \
-    --mainnet \
-    --out-file protocol.json
-
+if [ -z "$COLD_CREATE" ]; then
+    cardano-cli query protocol-parameters \
+        ${NETWORK_ARGUMENT} \
+        --out-file ${NODE_PATH}/staking/protocol.json
+else
+    if [ ! -f "${NODE_PATH}/staking/protocol.json" ]; then
+        read -n 1 -r -s -p "Missing ${NODE_PATH}/staking/protocol.json. You must transfer this file from an online node. Press ENTER when you have placed the file and are ready to continue."
+    fi
+fi
 
 # Get key-deposit
-KEY_DEPOSIT=$(jq -r .stakeAddressDeposit protocol.json)
+KEY_DEPOSIT=$(jq -r .stakeAddressDeposit ${NODE_PATH}/staking/protocol.json)
 
 # Find UTXO in address with enough lovelace to do the transaction
 ADDRESS=$(cat payment.addr)
@@ -95,8 +122,8 @@ FEE=$(cardano-cli transaction calculate-min-fee \
     --tx-out-count 1 \
     --witness-count 1 \
     --byron-witness-count 0 \
-    --mainnet \
-    --protocol-params-file protocol.json | tr ' ' '\n' | head -1)
+    ${NETWORK_ARGUMENT} \
+    --protocol-params-file ${NODE_PATH}/staking/protocol.json | tr ' ' '\n' | head -1)
 
 TOTAL_PRICE=$(expr ${FEE} + ${KEY_DEPOSIT})
 echo "Fee is: ${FEE} Lovelace"
@@ -104,8 +131,12 @@ echo "Key-Deposit: ${KEY_DEPOSIT} Lovelace"
 echo "Total Price is: ${TOTAL_PRICE}"
 
 # Find UTXO in address with enough lovelace to do the transaction
-check_balance ${TOTAL_PRICE}
-SLOT=$(get_slot)
+if [ -z "$COLD_CREATE" ]; then
+    check_balance ${TOTAL_PRICE}
+    SLOT=$(get_slot)
+else
+    read -p "Enter the current tip slot: " SLOT
+fi
 
 # Get slot and TTL
 TTL=$(expr ${SLOT} + 500)
@@ -133,28 +164,30 @@ cardano-cli transaction sign \
     --tx-body-file transactions/register_stake_address.raw \
     --signing-key-file payment.skey \
     --signing-key-file stake.skey \
-    --mainnet \
+    ${NETWORK_ARGUMENT} \
     --out-file transactions/register_stake_address.signed
 
 
 # Submit the transaction
-read -n 1 -r -s -p $'Press enter to submit the stake address certificate...\n'
+if [ -z "$COLD_CREATE" ]; then
+    read -n 1 -r -s -p $'Press enter to submit the stake address certificate...\n'
 
-OUT=$(cardano-cli transaction submit \
-    --tx-file transactions/register_stake_address.signed \
-    --mainnet 2>&1)
+    OUT=$(cardano-cli transaction submit \
+        --tx-file transactions/register_stake_address.signed \
+        ${NETWORK_ARGUMENT} 2>&1)
 
-if [[ $OUT =~ "Error" ]]
-then
-    echo "An error occoured."
-    echo ${OUT}
-    read
-else
-    echo "Transaction has been submitted to the blockchain."
-    echo ${OUT}
+    if [[ $OUT =~ "Error" ]]
+    then
+        echo "An error occoured."
+        echo ${OUT}
+        read
+    else
+        echo "Transaction has been submitted to the blockchain."
+        echo ${OUT}
 
-    # Wait for blockchain to register the address
-    wait_for_address_registration ${STAKE_ADDR}
-    echo "Your stake address is now registered in the blockchain."
-    touch transactions/register_stake_address.submitted
+        # Wait for blockchain to register the address
+        wait_for_address_registration ${STAKE_ADDR}
+        echo "Your stake address is now registered in the blockchain."
+        touch transactions/register_stake_address.submitted
+    fi
 fi

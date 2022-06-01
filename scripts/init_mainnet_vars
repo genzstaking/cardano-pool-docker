@@ -1,0 +1,7 @@
+#!/bin/bash
+export NETWORK_ARGUMENT="--mainnet"
+export NETWORK_TAG="1"
+export HARDFORK_EPOCH="208"
+
+
+

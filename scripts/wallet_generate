@@ -1,0 +1,126 @@
+#!/bin/bash
+# Required variables
+# - name
+# - WORK_DIR
+
+if [ -z "$name" ]; then
+	export name="main"
+fi
+
+if [ ! -d "{${WORK_DIR}/wallets/${name}" ]; then
+	mkdir -p "${WORK_DIR}/wallets/${name}"
+fi
+
+cd "${WORK_DIR}/wallets/${name}"
+
+#if [ -f "phrase.txt"   ]; then echo -e "\033[35mWARNING - phrase.txt already present, delete it or use another name !\033[0m"; exit 2; fi
+if [ -f "${WORK_DIR}/wallets/${name}/root.prv"     ]; then echo -e "\033[35mWARNING - root.prv already present, delete it or use another name !\033[0m"; exit 2; fi
+if [ -f "${WORK_DIR}/wallets/${name}/payment.xprv" ]; then echo -e "\033[35mWARNING - payment.xprv already present, delete it or use another name !\033[0m"; exit 2; fi
+if [ -f "${WORK_DIR}/wallets/${name}/payment.xpub" ]; then echo -e "\033[35mWARNING - payment.xpub already present, delete it or use another name !\033[0m"; exit 2; fi
+if [ -f "${WORK_DIR}/wallets/${name}/stake.xprv"   ]; then echo -e "\033[35mWARNING - stake.xprv already present, delete it or use another name !\033[0m"; exit 2; fi
+if [ -f "${WORK_DIR}/wallets/${name}/stake.xpub"   ]; then echo -e "\033[35mWARNING - stake.xpub already present, delete it or use another name !\033[0m"; exit 2; fi
+if [ -f "${WORK_DIR}/wallets/${name}/stake.xpub"   ]; then echo -e "\033[35mWARNING - stake.xpub already present, delete it or use another name !\033[0m"; exit 2; fi
+
+echo
+if [ -f "${WORK_DIR}/wallets/${name}/phrase.txt"   ]; then
+  echo "Phrase already present. Generating keys from phrase."
+else
+	echo "Generate Recovery Phrase: ${name}"
+	docker run --interactive \
+		genzbank/cardano-address \
+			recovery-phrase generate --size 24 > "${WORK_DIR}/wallets/${name}/phrase.txt"
+fi
+
+echo
+echo "Generate Root Key: ${name}"
+cat "${WORK_DIR}/wallets/${name}/phrase.txt" | docker run --interactive \
+		genzbank/cardano-address key from-recovery-phrase Shelley > "${WORK_DIR}/wallets/${name}/root.prv"
+
+echo
+echo "Generate Private Keys: ${name}"
+cat "${WORK_DIR}/wallets/${name}/root.prv"     | docker run --interactive genzbank/cardano-address key child 1852H/1815H/0H/0/0 > "${WORK_DIR}/wallets/${name}/payment.xprv"
+cat "${WORK_DIR}/wallets/${name}/payment.xprv" | docker run --interactive genzbank/cardano-address key public > "${WORK_DIR}/wallets/${name}/payment.xpub"
+cat "${WORK_DIR}/wallets/${name}/root.prv"     | docker run --interactive genzbank/cardano-address key child 1852H/1815H/0H/2/0 > "${WORK_DIR}/wallets/${name}/stake.xprv"
+cat "${WORK_DIR}/wallets/${name}/stake.xprv"   | docker run --interactive genzbank/cardano-address key public > "${WORK_DIR}/wallets/${name}/stake.xpub"
+
+echo "Generate Payment Address: ${name}"
+cat "${WORK_DIR}/wallets/${name}/payment.xpub" | docker run --interactive genzbank/cardano-address address payment --network-tag ${NETWORK_TAG} > "${WORK_DIR}/wallets/${name}/candidate.addr"
+
+echo
+echo "Generate Staking Address: ${name}"
+cat "${WORK_DIR}/wallets/${name}/candidate.addr" | docker run --interactive genzbank/cardano-address address delegation $(cat "${WORK_DIR}/wallets/${name}/stake.xpub") > "${WORK_DIR}/wallets/${name}/payment.candidate.addr"
+
+echo
+echo $(cat "${WORK_DIR}/wallets/${name}/candidate.addr")
+echo $(cat "${WORK_DIR}/wallets/${name}/payment.candidate.addr")
+cat "${WORK_DIR}/wallets/${name}/payment.xprv" | docker run --interactive genzbank/cardano-address key inspect
+cat "${WORK_DIR}/wallets/${name}/payment.xpub" | docker run --interactive genzbank/cardano-address key inspect
+
+cat stake.xprv | docker run --interactive genzbank/cardano-address key inspect
+cat stake.xpub | docker run --interactive genzbank/cardano-address key inspect
+
+cat candidate.addr         | docker run --interactive genzbank/cardano-address address inspect
+cat payment.candidate.addr | docker run --interactive genzbank/cardano-address address inspect
+
+# XPrv/XPub conversion to normal private and public key, keep in mind the
+# keypars are not a valid Ed25519 signing keypairs.
+SESKEY=$(cat "${WORK_DIR}/wallets/${name}/stake.xprv" | docker run --interactive genzbank/bech32 | cut -b -128 )$(cat "${WORK_DIR}/wallets/${name}/stake.xpub" | docker run --interactive genzbank/bech32)
+PESKEY=$(cat "${WORK_DIR}/wallets/${name}/payment.xprv" | docker run --interactive genzbank/bech32 | cut -b -128 )$(cat "${WORK_DIR}/wallets/${name}/payment.xpub" | docker run --interactive genzbank/bech32)
+
+cat << EOF > "${WORK_DIR}/wallets/${name}/stake.skey"
+{
+    "type": "StakeExtendedSigningKeyShelley_ed25519_bip32",
+    "description": "",
+    "cborHex": "5880$SESKEY"
+}
+EOF
+
+cat << EOF > "${WORK_DIR}/wallets/${name}/payment.skey"
+{
+    "type": "PaymentExtendedSigningKeyShelley_ed25519_bip32",
+    "description": "Payment Signing Key",
+    "cborHex": "5880$PESKEY"
+}
+EOF
+
+echo
+echo "Checking whether cardano-address and cardano-cli outputs match after conversion."
+cardano-cli shelley key verification-key --signing-key-file stake.skey --verification-key-file stake.evkey
+cardano-cli shelley key verification-key --signing-key-file payment.skey --verification-key-file payment.evkey
+
+cardano-cli shelley key non-extended-key --extended-verification-key-file stake.evkey --verification-key-file stake.vkey
+cardano-cli shelley key non-extended-key --extended-verification-key-file payment.evkey --verification-key-file payment.vkey
+
+cardano-cli shelley stake-address build --stake-verification-key-file   stake.vkey ${NETWORK_ARGUMENT} > stake.addr
+cardano-cli shelley address       build --payment-verification-key-file payment.vkey ${NETWORK_ARGUMENT} > addr
+
+cardano-cli shelley address build \
+    --payment-verification-key-file payment.vkey \
+    --stake-verification-key-file   stake.vkey \
+    ${NETWORK_ARGUMENT} > payment.addr
+
+
+echo
+echo "Important the base.addr and the base.addr_candidate must be the same"
+diff payment.addr payment.candidate.addr
+echo
+
+echo
+echo $(cat candidate.addr)
+echo $(cat addr)
+echo
+
+echo
+echo $(cat payment.candidate.addr)
+echo $(cat payment.addr)
+echo
+
+if [[ "$(cat payment.candidate.addr)" != "$(cat payment.addr)" ]]; then
+	echo -e "\033[35mWARNING - payment.candidate.addr doesn't match payment.addr! Serious ERROR!!!!\033[0m"; 
+	exit 2;
+fi
+
+if [[ "$(cat candidate.addr)" != "$(cat addr)" ]]; then
+	echo -e "\033[35mWARNING - candidate.addr doesn't match addr! Serious ERROR!!!!\033[0m";
+	exit 2;
+fi

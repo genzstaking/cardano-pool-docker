@@ -1,3 +1,5 @@
+#!/bin/bash
+
 function auto_topology {
     cp /cfg-templates/crontab /crontab
     service cron start

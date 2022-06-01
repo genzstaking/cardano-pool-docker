@@ -37,10 +37,13 @@ or donating a few ADA to:
    :caption: Contents:
    
    install
+   address/README
    node/README
    cli/README
+   scripts/README
    docs/creating-a-stake-pool.rst
    support
+   
 
 
 Indices and tables

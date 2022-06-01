@@ -1,0 +1,15 @@
+#!/bin/bash
+
+# GLOBAL Varibles
+# - STAKE_ADDR
+# - NETWORK_ARGUMENT
+function check_address_registration {
+    STAKE_ADDR=$1
+    _result="$(${CARDANOـCLI} \
+        query stake-address-info \
+            --address ${STAKE_ADDR} \
+            ${NETWORK_ARGUMENT})"
+    if [ ! _result == "[]" ]; then
+        echo "1"
+    fi
+}

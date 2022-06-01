@@ -1,3 +1,5 @@
+#!/bin/bash
+
 function create_and_register_pool {
     source /scripts/init_node_vars
     source /scripts/functions/wait_for_socket

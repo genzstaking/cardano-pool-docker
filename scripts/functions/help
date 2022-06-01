@@ -1,0 +1,13 @@
+#!/bin/bash
+
+function showHelp {
+	if [ -z "$command" ]; then
+		cat "${SRC_DIR}/resources/help.txt"
+	else
+		cat "${SRC_DIR}/resources/help-${command}.txt"
+	fi
+}
+
+function showVersion(){
+	cat "${SRC_DIR}/resources/version.txt"
+}

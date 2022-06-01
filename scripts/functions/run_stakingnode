@@ -1,3 +1,5 @@
+#!/bin/bash
+
 function run_stakingnode {
     source /scripts/init_node_vars
     source /scripts/functions/node_info

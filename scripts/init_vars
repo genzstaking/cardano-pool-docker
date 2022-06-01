@@ -1,0 +1,23 @@
+#!/bin/bash
+#export PATH=$PATH:/root/.local/bin
+# TODO: load .env from working directory
+
+# TODO: check if general configuration are set
+export CARDANO_NETWORK="main"
+
+
+#
+# Current directory is suppoesed as node path
+#
+export CARDANO_NODE_PATH="$PWD/${CARDANO_NETWORK}-relay"
+export CARDANO_NODE_SOCKET_PATH=${NODE_PATH}/node.socket
+
+
+export NODE_NAME="main"
+export NODE_PORT="3001"
+export WAIT_FOR_SYNC=
+export NODE_TOPOLOGY=
+
+
+source "${SRC_DIR}/init_logging_vars"
+source "${SRC_DIR}/init_${CARDANO_NETWORK}net_vars"

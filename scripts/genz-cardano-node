@@ -1,0 +1,177 @@
+#!/bin/bash
+
+SOURCE="${BASH_SOURCE[0]:-$0}";
+while [ -L "$SOURCE" ]; do # resolve $SOURCE until the file is no longer a symlink
+  DIR="$( cd -P "$( dirname -- "$SOURCE"; )" &> /dev/null && pwd 2> /dev/null; )";
+  SOURCE="$( readlink -- "$SOURCE"; )";
+  [[ $SOURCE != /* ]] && SOURCE="${DIR}/${SOURCE}"; # if $SOURCE was a relative symlink, we need to resolve it relative to the path where the symlink file was located
+done
+export SRC_DIR="$( cd -P "$( dirname -- "$SOURCE"; )" &> /dev/null && pwd 2> /dev/null; )";
+export WORK_DIR="$PWD"
+
+export version=0
+export verbose=0
+export rebuilt=0
+
+
+# Include functions
+source "${SRC_DIR}/init_vars"
+
+source "${SRC_DIR}/functions/help"
+#source ${CARDANO_POOL_DOCKER_HOME}/functions/run_node
+#source ${CARDANO_POOL_DOCKER_HOME}/functions/get_public_ip
+#source ${CARDANO_POOL_DOCKER_HOME}/functions/init_config
+
+
+# Extract subcommand
+case "$1" in
+	pooltool|node|cli|wallet)
+		export command=$1
+		export longOptions=",network:"
+		export options="n:"
+		shift
+		;;
+esac
+
+if [[ $command == "wallet" ]]; then
+	case "$1" in
+	create)
+		export subcommand=$1
+		export subLongOptions=""
+		export subOptions=""
+		shift
+		;;
+	esac
+fi
+
+
+# $@ is all command line parameters passed to the script.
+# -o is for short options like -v
+# -l is for long options with double dash like --version
+# the comma separates different long options
+# -a is for long options with single dash like -version
+options=$(getopt -l "help,version,verbose${longOptions}${subLongOptions}" -o "hv:V${options}${subOptions}" -a -- "$@")
+
+# set --:
+# If no arguments follow this option, then the positional parameters are unset. Otherwise, the positional parameters 
+# are set to the arguments, even if some of them begin with a ‘-’.
+eval set -- "$options"
+
+
+####################################################################
+#                       Generall options
+####################################################################
+while true; do
+	case $1 in
+	-h|--help) 
+		showHelp
+		exit 0
+		;;
+	-v|--version) 
+		showVersion
+		exit 0
+		;;
+	-V|--verbose)
+	    export verbose=1
+	    ;;
+	-r|--rebuild)
+	    export rebuild=1
+	    ;;
+	--)
+	    shift
+	    break;;
+	esac
+	shift
+done
+#if [ -z "$1" ]; then
+#    showHelp
+#fi
+#if [ -z "$verbose" ]; then
+#	# Set xtrace and verbose mode.
+#	set -xv
+#fi
+
+####################################################################
+#                       Wallet
+####################################################################
+if [[ $command == "wallet" ]]; then
+	case "$subcommand" in
+	create)
+		"${SRC_DIR}/wallet_generate"
+		exit 0
+		;;
+	esac
+fi
+####################################################################
+#                       node
+####################################################################
+ #       cli)
+ #           START_CLI=1
+ #           break
+ #       ;;
+ #       init-config)
+ #           init_config
+ #           break
+ #       ;;
+ #       init-pooltool)
+ #           init_pooltool
+ #           break
+ #       ;;
+ #       start)
+ #           START_NODE=1
+ #       ;;
+ #       staking)
+ #           STAKING=1
+ #       ;;
+ #       create)
+ #           CREATE=1
+ #       ;;
+ #       cold-create)
+ #           CREATE=1
+ #           COLD_CREATE=1
+ #           COLD="${COLD} --cold-create"
+ #       ;;
+ #       cold-register)
+ #           CREATE=1
+ #           COLD="${COLD} --cold-register"
+ #       ;;
+
+#  If not doing cold-create
+#if [ -z "${COLD_CREATE}" ]; then
+#    # Handle IP addresses
+#    export PUBLIC_IP=$(get_public_ip)
+#    if [ -z "${HOST_ADDR}" ]; then
+#        export HOST_ADDR=${PUBLIC_IP}
+#    fi
+#fi
+#
+#if [ -n "$CREATE" ]; then
+#    create_stakepool ${COLD}
+#fi
+#
+## start node
+#if [ -n "$START_NODE" ]; then
+#    if [ -n "$STAKING" ]; then
+#        # Start as staking node
+#        /scripts/start-stakenode
+#    else
+#        if [[ $AUTO_TOPOLOGY = "True" ]]; then
+#            source /scripts/functions/auto_topology
+#            auto_topology
+#        fi
+#
+#        source /scripts/functions/run_node
+#        run_node
+#    fi
+#fi
+
+
+
+
+
+
+
+
+
+
+

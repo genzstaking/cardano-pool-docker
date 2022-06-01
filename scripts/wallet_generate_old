@@ -31,7 +31,6 @@ if [ ! -f "stake.skey" ]; then
         --signing-key-file stake.skey
     echo "Generated stake.vkey and stake.skey."
 else
-    
     echo "Stake key pair already exists."
 fi
 

@@ -1,0 +1,5 @@
+#!/bin/bash
+
+# Init pooltool config
+POOL_ID=$(cat ${NODE_PATH}/staking/POOL_ID)
+echo {'"'api_key'"': '"'${PT_API_KEY}'"','"'pools'"': [{'"'name'"': '"'${POOL_TICKER}'"','"'pool_id'"':'"'${POOL_ID}'"','"'host'"':'"'127.0.0.1'"','"'port'"':${NODE_PORT}}]} > ${NODE_PATH}/pooltool.json

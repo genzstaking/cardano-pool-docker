@@ -1,0 +1,20 @@
+Wallet command manage your local wallet with cardano-cli.
+
+Wallet is store in a folder with name ot the wallet. fro example a wallet with name my_wallet is storedd in ./my_wallet.
+
+Options:
+
+Examples:
+
+To display wallet help:
+
+	genz-cardano-node wallet --help
+
+Create a wallet with defualt name.
+
+	genz-cardano-node wallet create --wallet=main
+
+To get balance of a wallet
+
+	genz-cardano-node wallet balance --wallet=main
+

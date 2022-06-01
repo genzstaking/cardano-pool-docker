@@ -1,3 +1,5 @@
+#!/bin/bash
+
 function wait_for_pool_registration {
     source /scripts/functions/check_pool_registration
 
