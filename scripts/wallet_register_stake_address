@@ -78,6 +78,8 @@ fi
 
 # Generate protocol
 docker run --interactive \
+    --env CARDANO_NODE_SOCKET_PATH=/node/node.socket \
+    --volume "${WORK_DIR}/${CARDANO_NETWORK}-relay:/node" \
     --volume ${walletFolder}:/root \
     --workdir /root \
     genzbank/cardano-cli \
