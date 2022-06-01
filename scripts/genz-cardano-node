@@ -30,6 +30,20 @@ case "$1" in
 		export longOptions=",name:"
 		export options=""
 		shift
+		case "$1" in
+		create)
+			export subcommand=$1
+			export subLongOptions=""
+			export subOptions=""
+			shift
+			;;
+		balance)
+			export subcommand=$1
+			export subLongOptions=""
+			export subOptions=""
+			shift
+			;;
+		esac
 		;;
 	pooltool|node|cli)
 		export command=$1
@@ -37,24 +51,10 @@ case "$1" in
 		export options=""
 		shift
 		;;
+	*)
+		echo "Command not supported $1"
+		exit 5 # TOOD use constant
 esac
-
-if [[ $command == "wallet" ]]; then
-	case "$1" in
-	create)
-		export subcommand=$1
-		export subLongOptions=""
-		export subOptions=""
-		shift
-		;;
-	balance)
-		export subcommand=$1
-		export subLongOptions=""
-		export subOptions=""
-		shift
-		;;
-	esac
-fi
 
 
 # $@ is all command line parameters passed to the script.
