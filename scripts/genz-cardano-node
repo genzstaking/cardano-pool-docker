@@ -25,10 +25,16 @@ source "${SRC_DIR}/functions/help"
 
 # Extract subcommand
 case "$1" in
-	pooltool|node|cli|wallet)
+	wallet)
 		export command=$1
-		export longOptions=",network:"
-		export options="n:"
+		export longOptions=",name:"
+		export options=""
+		shift
+		;;
+	pooltool|node|cli)
+		export command=$1
+		export longOptions=""
+		export options=""
 		shift
 		;;
 esac
@@ -36,6 +42,12 @@ esac
 if [[ $command == "wallet" ]]; then
 	case "$1" in
 	create)
+		export subcommand=$1
+		export subLongOptions=""
+		export subOptions=""
+		shift
+		;;
+	balance)
 		export subcommand=$1
 		export subLongOptions=""
 		export subOptions=""
@@ -50,7 +62,7 @@ fi
 # -l is for long options with double dash like --version
 # the comma separates different long options
 # -a is for long options with single dash like -version
-options=$(getopt -l "help,version,verbose${longOptions}${subLongOptions}" -o "hv:V${options}${subOptions}" -a -- "$@")
+options=$(getopt -l "help,version,verbose,network:${longOptions}${subLongOptions}" -o "hv:Vn:${options}${subOptions}" -a -- "$@")
 
 # set --:
 # If no arguments follow this option, then the positional parameters are unset. Otherwise, the positional parameters 
@@ -72,16 +84,21 @@ while true; do
 		exit 0
 		;;
 	-V|--verbose)
-	    export verbose=1
-	    ;;
+		export verbose=1
+		shift
+		;;
 	-r|--rebuild)
-	    export rebuild=1
-	    ;;
+		export rebuild=1
+		shift
+		;;
+	--name)
+		export name=$2
+		shift 2
+		;;
 	--)
-	    shift
-	    break;;
+		shift
+		break;;
 	esac
-	shift
 done
 #if [ -z "$1" ]; then
 #    showHelp
@@ -98,6 +115,10 @@ if [[ $command == "wallet" ]]; then
 	case "$subcommand" in
 	create)
 		"${SRC_DIR}/wallet_generate"
+		exit 0
+		;;
+	balance)
+		"${SRC_DIR}/wallet_balance"
 		exit 0
 		;;
 	esac

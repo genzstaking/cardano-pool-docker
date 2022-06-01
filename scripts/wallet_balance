@@ -1,32 +1,30 @@
 #!/bin/bash
 
-
-WALLET=$1
-
-if [ -z "$WALLET" ]; then
-    echo "Invalid wallet."
-    MISSING_ARG=1
-fi
-
-if [ -n "$MISSING_ARG" ]; then
-    exit
+if [ -z "$name" ]; then
+	export name="main"
 fi
 
 # Check for required files
-if [ ! -f "${NODE_PATH}/staking/wallets/${WALLET}/payment.addr" ]; then
-    echo "Missing required payment.addr. You need to run \`generate_wallet ${WALLET}\` to generate this key."
-    MISSING_FILES=1
-fi
-
-if [ -n "$MISSING_FILES" ]; then
-    exit
+if [ ! -f "${WORK_DIR}/wallets/${name}/payment.addr" ]; then
+    echo "Missing required payment.addr. You need to run \`wallet create --name ${name}\` to generate this key."
+    echo "Or use \`--name wallet_name\` to select an existed wallet."
+    exit 3 #TODO $ERROR_CODE_MISSING
 fi
 
 # Wait for node to sync
 if [[ "${WAIT_FOR_SYNC}" == "True" ]]; then
-    wait_for_sync 99.90
+   # wait_for_sync 99.90
+   echo "Wait for sync is not supported."
+   exit 1
 fi
 
-ADDRESS=$(cat ${NODE_PATH}/staking/wallets/${WALLET}/payment.addr)
+ADDRESS=$(cat "${WORK_DIR}/staking/wallets/${name}/payment.addr")
 
-cardano-cli query utxo ${NETWORK_ARGUMENT} --address ${ADDRESS}
+docker run --interactive \
+    --env CARDANO_NODE_SOCKET_PATH=/node/node.socket \
+    --volume "${WORK_DIR}/${CARDANO_NETWORK}-relay:/node" \
+    --volume $PWD:/root \
+    --workdir /root \
+    genzbank/cardano-cli \
+        query utxo ${NETWORK_ARGUMENT} \
+        --address ${ADDRESS}

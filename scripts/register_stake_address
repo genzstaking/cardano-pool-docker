@@ -6,7 +6,6 @@
 
 # Init functions and vars
 
-SRC_DIR=$( dirname -- "$0"; )
 source "${SRC_DIR}/functions/check_balance"
 source "${SRC_DIR}/functions/check_address_registration"
 source "${SRC_DIR}/functions/wait_for_address_registration"

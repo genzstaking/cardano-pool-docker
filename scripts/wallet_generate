@@ -85,42 +85,87 @@ EOF
 
 echo
 echo "Checking whether cardano-address and cardano-cli outputs match after conversion."
-cardano-cli shelley key verification-key --signing-key-file stake.skey --verification-key-file stake.evkey
-cardano-cli shelley key verification-key --signing-key-file payment.skey --verification-key-file payment.evkey
+docker run --interactive \
+    --volume "${WORK_DIR}/wallets/${name}:/root" \
+    --workdir=/root \
+    genzbank/cardano-cli \
+    shelley key verification-key \
+        --signing-key-file stake.skey \
+        --verification-key-file stake.evkey
 
-cardano-cli shelley key non-extended-key --extended-verification-key-file stake.evkey --verification-key-file stake.vkey
-cardano-cli shelley key non-extended-key --extended-verification-key-file payment.evkey --verification-key-file payment.vkey
+docker run --interactive \
+    --volume "${WORK_DIR}/wallets/${name}:/root" \
+    --workdir=/root \
+    genzbank/cardano-cli \
+    shelley key verification-key \
+        --signing-key-file payment.skey \
+        --verification-key-file payment.evkey
 
-cardano-cli shelley stake-address build --stake-verification-key-file   stake.vkey ${NETWORK_ARGUMENT} > stake.addr
-cardano-cli shelley address       build --payment-verification-key-file payment.vkey ${NETWORK_ARGUMENT} > addr
+docker run --interactive \
+    --volume "${WORK_DIR}/wallets/${name}:/root" \
+    --workdir=/root \
+    genzbank/cardano-cli \
+    shelley key non-extended-key \
+        --extended-verification-key-file stake.evkey \
+        --verification-key-file stake.vkey
 
-cardano-cli shelley address build \
-    --payment-verification-key-file payment.vkey \
-    --stake-verification-key-file   stake.vkey \
-    ${NETWORK_ARGUMENT} > payment.addr
+docker run --interactive \
+    --volume "${WORK_DIR}/wallets/${name}:/root" \
+    --workdir=/root \
+    genzbank/cardano-cli \
+    shelley key non-extended-key \
+        --extended-verification-key-file payment.evkey \
+        --verification-key-file payment.vkey
+
+docker run --interactive \
+    --volume "${WORK_DIR}/wallets/${name}:/root" \
+    --workdir=/root \
+    genzbank/cardano-cli \
+    shelley stake-address build \
+        --stake-verification-key-file stake.vkey \
+        ${NETWORK_ARGUMENT} > stake.addr
+
+docker run --interactive \
+    --volume "${WORK_DIR}/wallets/${name}:/root" \
+    --workdir=/root \
+    genzbank/cardano-cli \
+    shelley address build \
+        --payment-verification-key-file payment.vkey \
+        ${NETWORK_ARGUMENT} > addr
+
+docker run --interactive \
+    --volume "${WORK_DIR}/wallets/${name}:/root" \
+    --workdir=/root \
+    genzbank/cardano-cli \
+    shelley address build \
+        --payment-verification-key-file payment.vkey \
+        --stake-verification-key-file   stake.vkey \
+        ${NETWORK_ARGUMENT} > payment.addr
 
 
 echo
 echo "Important the base.addr and the base.addr_candidate must be the same"
-diff payment.addr payment.candidate.addr
+diff \
+    "${WORK_DIR}/wallets/${name}/payment.addr" \
+    "${WORK_DIR}/wallets/${name}/payment.candidate.addr"
 echo
 
 echo
-echo $(cat candidate.addr)
-echo $(cat addr)
+echo $(cat "${WORK_DIR}/wallets/${name}/candidate.addr")
+echo $(cat "${WORK_DIR}/wallets/${name}/addr")
 echo
 
 echo
-echo $(cat payment.candidate.addr)
-echo $(cat payment.addr)
+echo $(cat "${WORK_DIR}/wallets/${name}/payment.candidate.addr")
+echo $(cat "${WORK_DIR}/wallets/${name}/payment.addr")
 echo
 
-if [[ "$(cat payment.candidate.addr)" != "$(cat payment.addr)" ]]; then
-	echo -e "\033[35mWARNING - payment.candidate.addr doesn't match payment.addr! Serious ERROR!!!!\033[0m"; 
-	exit 2;
+if [[ "$(cat ${WORK_DIR}/wallets/${name}/payment.candidate.addr)" != "$(cat ${WORK_DIR}/wallets/${name}/payment.addr)" ]]; then
+    echo -e "\033[35mWARNING - payment.candidate.addr doesn't match payment.addr! Serious ERROR!!!!\033[0m"; 
+    exit 2;
 fi
 
-if [[ "$(cat candidate.addr)" != "$(cat addr)" ]]; then
+if [[ "$(cat ${WORK_DIR}/wallets/${name}/candidate.addr)" != "$(cat ${WORK_DIR}/wallets/${name}/addr)" ]]; then
 	echo -e "\033[35mWARNING - candidate.addr doesn't match addr! Serious ERROR!!!!\033[0m";
 	exit 2;
 fi
