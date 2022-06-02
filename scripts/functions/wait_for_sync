@@ -10,7 +10,7 @@ function wait_for_sync {
 
     while true; do
         status=$("${SRC_DIR}/relay_sync_status")
-        SYNC_PCT=$( $status | tr ' ' '\n' | tail -1 | sed 's/%//g' | bc)
+        SYNC_PCT=$( echo $status | tr ' ' '\n' | tail -1 | sed 's/%//g' | bc)
         echo -en "\\r== $status"
 
         if [[ (($SYNC_PCT > $WAIT_FOR_SYNC)) ]]; then
