@@ -1,5 +1,6 @@
 #!/bin/bash
 # Thanks to Smaug from https://t.me/CardanoStakePoolWorkgroup
+# This command check the sync status of a node relay
 
 source "${SRC_DIR}/functions/wait_for_socket"
 wait_for_socket
@@ -18,7 +19,13 @@ byron_slots=$(($HARDFORK_EPOCH * byron_epoch_length))
 now=$(date +'%s')
 
 expected_slot=$((byron_slots + (now - byron_end) / slot_length))
-current_slot=$(cardano-cli query tip $NETWORK_ARGUMENT | jq -r '.slot')
+current_slot=$(docker run --interactive \
+    --env CARDANO_NODE_SOCKET_PATH=/node/node.socket \
+    --volume "${WORK_DIR}/${CARDANO_NETWORK}-relay:/node" \
+    --volume ${walletFolder}:/root \
+    --workdir /root \
+    genzbank/cardano-cli \
+        query tip $NETWORK_ARGUMENT | jq -r '.slot')
 percent=$(echo -e "scale=2\n$current_slot * 100 / $expected_slot" | bc)
 
 echo "slot ${current_slot}/${expected_slot} ${percent}%"

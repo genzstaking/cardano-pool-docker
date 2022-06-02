@@ -12,14 +12,14 @@ function check_balance {
 
         TOTAL_LOVELACE=0
         
-		output=$(docker run --interactive \
-		    --env CARDANO_NODE_SOCKET_PATH=/node/node.socket \
-		    --volume "${WORK_DIR}/${CARDANO_NETWORK}-relay:/node" \
-		    --volume $WORK_DIR:/root \
-		    --workdir /root \
-		    genzbank/cardano-cli \
-	        	query utxo ${NETWORK_ARGUMENT} \
-	        	--address ${ADDRESS})
+        output=$(docker run --interactive \
+            --env CARDANO_NODE_SOCKET_PATH=/node/node.socket \
+            --volume "${WORK_DIR}/${CARDANO_NETWORK}-relay:/node" \
+            --volume $WORK_DIR:/root \
+            --workdir /root \
+            genzbank/cardano-cli \
+                query utxo ${NETWORK_ARGUMENT} \
+                --address ${ADDRESS})
 
         UTXOS=$(echo $output | tail -n +3)
         echo "UTXO#TXIX: LOVELACE"
@@ -54,7 +54,7 @@ function check_balance {
         echo "${ADDRESS}"
         echo ""
         echo "If you have funded your address, you need to wait for the transaction to be processed and your node to synchronize."
-        "${SRC_DIR}/functions/sync_status"
+        "${SRC_DIR}/relay_sync_status"
         echo ""
 
         sleep 10

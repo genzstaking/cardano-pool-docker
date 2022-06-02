@@ -15,13 +15,13 @@ source "${SRC_DIR}/functions/check_balance"
 
 # Define wallet
 if [ -z "$name" ]; then
-	export name="main"
+    export name="main"
 fi
 
 walletFolder="${WORK_DIR}/wallets/${name}"
 if [ ! -d "$walletFolder" ]; then
-	echo "Wallet not found. Use \' wallet create --name $name \' to create a new one"
-	exit 3 # TODO: replace with error code
+    echo "Wallet not found. Use \' wallet create --name $name \' to create a new one"
+    exit 3 # TODO: replace with error code
 fi
 
 # Enter staking directory
@@ -39,11 +39,11 @@ files=( \
 )
 for file in "${files[@]}"
 do 
-	if [ ! -f "${walletFolder}/${file}" ]; then
-		echo ${walletFolder}/$file	
-	    echo "Missing required ${file}. You need to run \`wallet create ${name}\` to generate this key."
-	    exit 3 # TODO: replace with error code
-	fi
+    if [ ! -f "${walletFolder}/${file}" ]; then
+        echo ${walletFolder}/$file    
+        echo "Missing required ${file}. You need to run \`wallet create ${name}\` to generate this key."
+        exit 3 # TODO: replace with error code
+    fi
 done
 
 transFolder="${walletFolder}/transactions"
@@ -64,13 +64,13 @@ mkdir -p "$transFolder"
 
 # Create an address registration certificate
 if [ ! -f "${walletFolder}/stake.cert" ]; then
-	docker run --interactive \
-	    --volume ${walletFolder}:/root \
-	    --workdir /root \
-	    genzbank/cardano-cli \
-    	stake-address registration-certificate \
-        	--staking-verification-key-file stake.vkey \
-        	--out-file stake.cert
+    docker run --interactive \
+        --volume ${walletFolder}:/root \
+        --workdir /root \
+        genzbank/cardano-cli \
+        stake-address registration-certificate \
+            --staking-verification-key-file stake.vkey \
+            --out-file stake.cert
     echo "Created stake.cert"
 else
     echo "stake.cert certificate already exists."
@@ -83,9 +83,9 @@ docker run --interactive \
     --volume ${walletFolder}:/root \
     --workdir /root \
     genzbank/cardano-cli \
-	query protocol-parameters \
-    	${NETWORK_ARGUMENT} \
-    	--out-file protocol.json
+    query protocol-parameters \
+        ${NETWORK_ARGUMENT} \
+        --out-file protocol.json
 
 # Get key-deposit
 KEY_DEPOSIT=$(jq -r .stakeAddressDeposit "${walletFolder}/protocol.json")

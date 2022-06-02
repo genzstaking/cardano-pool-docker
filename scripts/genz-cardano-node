@@ -51,6 +51,20 @@ case "$1" in
 			;;
 		esac
 		;;
+	relay)
+		export command=$1
+		export longOptions=""
+		export options=""
+		shift
+		case "$1" in
+		syncStatus)
+			export subcommand=$1
+			export subLongOptions=""
+			export subOptions=""
+			shift
+			;;
+		esac
+		;;
 	pooltool|node|cli)
 		export command=$1
 		export longOptions=""
@@ -117,22 +131,33 @@ done
 ####################################################################
 #                       Wallet
 ####################################################################
-if [[ $command == "wallet" ]]; then
-	case "$subcommand" in
-	create)
-		"${SRC_DIR}/wallet_generate"
-		exit 0
+case "$command" in
+	wallet)
+		case "$subcommand" in
+		create)
+			"${SRC_DIR}/wallet_generate"
+			exit 0
+			;;
+		balance)
+			"${SRC_DIR}/wallet_balance"
+			exit 0
+			;;
+		registerStakeAddress)
+			"${SRC_DIR}/wallet_register_stake_address"
+			exit 0
+			;;
+		esac
 		;;
-	balance)
-		"${SRC_DIR}/wallet_balance"
-		exit 0
+	
+	relay)
+		case "$subcommand" in
+		syncStatus)
+			"${SRC_DIR}/relay_sync_status"
+			exit 0
+			;;
+		esac
 		;;
-	registerStakeAddress)
-		"${SRC_DIR}/wallet_register_stake_address"
-		exit 0
-		;;
-	esac
-fi
+esac
 ####################################################################
 #                       node
 ####################################################################
