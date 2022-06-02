@@ -181,25 +181,29 @@ docker run --interactive \
 
 
 # Submit the transaction
-if [ -z "$COLD_CREATE" ]; then
-    read -n 1 -r -s -p $'Press enter to submit the stake address certificate...\n'
+read -n 1 -r -s -p $'Press enter to submit the stake address certificate...\n'
 
-    OUT=$(cardano-cli transaction submit \
+OUT=$(docker run --interactive \
+    --env CARDANO_NODE_SOCKET_PATH=/node/node.socket \
+    --volume "${WORK_DIR}/${CARDANO_NETWORK}-relay:/node" \
+    --volume ${walletFolder}:/root \
+    --workdir /root \
+    genzbank/cardano-cli \
+        transaction submit \
         --tx-file transactions/register_stake_address.signed \
         ${NETWORK_ARGUMENT} 2>&1)
 
-    if [[ $OUT =~ "Error" ]]
-    then
-        echo "An error occoured."
-        echo ${OUT}
-        read
-    else
-        echo "Transaction has been submitted to the blockchain."
-        echo ${OUT}
+if [[ $OUT =~ "Error" ]]
+then
+    echo "An error occoured."
+    echo ${OUT}
+    read
+else
+    echo "Transaction has been submitted to the blockchain."
+    echo ${OUT}
 
-        # Wait for blockchain to register the address
-        wait_for_address_registration ${STAKE_ADDR}
-        echo "Your stake address is now registered in the blockchain."
-        touch transactions/register_stake_address.submitted
-    fi
+    # Wait for blockchain to register the address
+    wait_for_address_registration ${STAKE_ADDR}
+    echo "Your stake address is now registered in the blockchain."
+    touch "${walletFolder}/transactions/register_stake_address.submitted"
 fi
