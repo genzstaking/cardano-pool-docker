@@ -77,6 +77,12 @@ case "$1" in
 			export subOptions=""
 			shift
 			;;
+		getSlot)
+			export subcommand=$1
+			export subLongOptions=""
+			export subOptions=""
+			shift
+			;;
 		esac
 		;;
 	pooltool|node|cli)
@@ -174,6 +180,10 @@ case "$command" in
 		case "$subcommand" in
 		syncStatus)
 			"${SRC_DIR}/relay_sync_status"
+			exit 0
+			;;
+		getSlot)
+			"${SRC_DIR}/relay_get_slot"
 			exit 0
 			;;
 		esac
