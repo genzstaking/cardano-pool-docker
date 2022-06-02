@@ -95,23 +95,35 @@ ADDRESS=$(cat "${walletFolder}/payment.addr")
 check_balance ${KEY_DEPOSIT}
 
 # Draft transaction
-cardano-cli transaction build-raw \
-    --tx-in "${UTXO}#${TXIX}" \
-    --tx-out ${ADDRESS}+0 \
-    --ttl 0 \
-    --fee 0 \
-    --out-file transactions/register_stake_address.draft \
-    --certificate-file stake.cert
+docker run --interactive \
+    --env CARDANO_NODE_SOCKET_PATH=/node/node.socket \
+    --volume "${WORK_DIR}/${CARDANO_NETWORK}-relay:/node" \
+    --volume ${walletFolder}:/root \
+    --workdir /root \
+    genzbank/cardano-cli \
+       transaction build-raw \
+       --tx-in "${UTXO}#${TXIX}" \
+       --tx-out ${ADDRESS}+0 \
+       --ttl 0 \
+       --fee 0 \
+       --out-file transactions/register_stake_address.draft \
+       --certificate-file stake.cert
 
 # Calculate fees
-FEE=$(cardano-cli transaction calculate-min-fee \
-    --tx-body-file transactions/register_stake_address.draft \
-    --tx-in-count 1 \
-    --tx-out-count 1 \
-    --witness-count 1 \
-    --byron-witness-count 0 \
-    ${NETWORK_ARGUMENT} \
-    --protocol-params-file ${NODE_PATH}/staking/protocol.json | tr ' ' '\n' | head -1)
+FEE=$(docker run --interactive \
+    --env CARDANO_NODE_SOCKET_PATH=/node/node.socket \
+    --volume "${WORK_DIR}/${CARDANO_NETWORK}-relay:/node" \
+    --volume ${walletFolder}:/root \
+    --workdir /root \
+    genzbank/cardano-cli \
+       transaction calculate-min-fee \
+       --tx-body-file transactions/register_stake_address.draft \
+       --tx-in-count 1 \
+       --tx-out-count 1 \
+       --witness-count 1 \
+       --byron-witness-count 0 \
+       ${NETWORK_ARGUMENT} \
+       --protocol-params-file protocol.json" | tr ' ' '\n' | head -1)
 
 TOTAL_PRICE=$(expr ${FEE} + ${KEY_DEPOSIT})
 echo "Fee is: ${FEE} Lovelace"
@@ -139,21 +151,33 @@ echo "TTL: ${TTL}"
 #
 # Create the transaction
 #
-cardano-cli transaction build-raw \
-    --tx-in "${UTXO}#${TXIX}" \
-    --tx-out ${ADDRESS}+${REMAINING_AFTER_TX} \
-    --ttl ${TTL} \
-    --fee ${FEE} \
-    --out-file transactions/register_stake_address.raw \
-    --certificate-file stake.cert
+docker run --interactive \
+    --env CARDANO_NODE_SOCKET_PATH=/node/node.socket \
+    --volume "${WORK_DIR}/${CARDANO_NETWORK}-relay:/node" \
+    --volume ${walletFolder}:/root \
+    --workdir /root \
+    genzbank/cardano-cli \
+        transaction build-raw \
+        --tx-in "${UTXO}#${TXIX}" \
+        --tx-out ${ADDRESS}+${REMAINING_AFTER_TX} \
+        --ttl ${TTL} \
+        --fee ${FEE} \
+        --out-file transactions/register_stake_address.raw \
+        --certificate-file stake.cert
 
 # Sign the transaction
-cardano-cli transaction sign \
-    --tx-body-file transactions/register_stake_address.raw \
-    --signing-key-file payment.skey \
-    --signing-key-file stake.skey \
-    ${NETWORK_ARGUMENT} \
-    --out-file transactions/register_stake_address.signed
+docker run --interactive \
+    --env CARDANO_NODE_SOCKET_PATH=/node/node.socket \
+    --volume "${WORK_DIR}/${CARDANO_NETWORK}-relay:/node" \
+    --volume ${walletFolder}:/root \
+    --workdir /root \
+    genzbank/cardano-cli \
+       transaction sign \
+           --tx-body-file transactions/register_stake_address.raw \
+           --signing-key-file payment.skey \
+           --signing-key-file stake.skey \
+           ${NETWORK_ARGUMENT} \
+           --out-file transactions/register_stake_address.signed
 
 
 # Submit the transaction
