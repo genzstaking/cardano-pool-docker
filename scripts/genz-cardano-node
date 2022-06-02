@@ -25,6 +25,20 @@ source "${SRC_DIR}/functions/help"
 
 # Extract subcommand
 case "$1" in
+	app)
+		export command=$1
+		export longOptions=""
+		export options=""
+		shift
+		case "$1" in
+		update)
+			export subcommand=$1
+			export subLongOptions=""
+			export subOptions=""
+			shift
+			;;
+		esac
+		;;
 	wallet)
 		export command=$1
 		export longOptions=",name:"
@@ -132,6 +146,14 @@ done
 #                       Wallet
 ####################################################################
 case "$command" in
+	app)
+		case "$subcommand" in
+		update)
+			"${SRC_DIR}/app_update"
+			exit 0
+			;;
+		esac
+		;;
 	wallet)
 		case "$subcommand" in
 		create)
@@ -148,7 +170,6 @@ case "$command" in
 			;;
 		esac
 		;;
-	
 	relay)
 		case "$subcommand" in
 		syncStatus)
