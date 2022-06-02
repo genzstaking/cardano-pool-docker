@@ -10,7 +10,7 @@ source "${SRC_DIR}/functions/check_balance"
 source "${SRC_DIR}/functions/check_address_registration"
 source "${SRC_DIR}/functions/wait_for_address_registration"
 #source "${SRC_DIR}/functions/wait_for_slot"
-#source "${SRC_DIR}/functions/wait_for_sync"
+source "${SRC_DIR}/functions/wait_for_sync"
 
 # Define wallet
 if [ -z "$name" ]; then
@@ -49,9 +49,9 @@ transFolder="${walletFolder}/transactions"
 mkdir -p "$transFolder"
 
 # TODO: maso, 2022: Wait for node to sync
-#if [[ "${WAIT_FOR_SYNC}" == "True" ]]; then
-#    wait_for_sync 99.90
-#fi
+if [[ "${WAIT_FOR_SYNC}" == "True" ]]; then
+    wait_for_sync 99.90
+fi
 
 if [ -n "$(check_address_registration ${STAKE_ADDR})" ]; then
     echo "Your stake address has already been registered in the blockchain."

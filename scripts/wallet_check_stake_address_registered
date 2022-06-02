@@ -1,0 +1,52 @@
+#!/bin/bash
+
+# From Documentation
+# https://github.com/input-output-hk/cardano-tutorials/blob/master/node-setup/040_transactions.md
+# https://github.com/input-output-hk/cardano-tutorials/blob/master/node-setup/050_register_key.md
+
+# Init functions and vars
+
+source "${SRC_DIR}/functions/check_balance"
+source "${SRC_DIR}/functions/check_address_registration"
+source "${SRC_DIR}/functions/wait_for_address_registration"
+
+# Define wallet
+if [ -z "$name" ]; then
+    export name="main"
+fi
+
+walletFolder="${WORK_DIR}/wallets/${name}"
+if [ ! -d "$walletFolder" ]; then
+    echo "Wallet not found. Use \' wallet create --name $name \' to create a new one"
+    exit 3 # TODO: replace with error code
+fi
+
+# Enter staking directory
+STAKE_ADDR=$(cat "${walletFolder}/stake.addr")
+
+echo ""
+echo "Checking staking addresses for $name to be registered int the blockchain."
+
+# Check for required files
+files=( \
+ "stake.vkey" \
+ "stake.skey" \
+ "payment.skey" \
+ "payment.addr" \
+)
+for file in "${files[@]}"
+do 
+    if [ ! -f "${walletFolder}/${file}" ]; then
+        echo ${walletFolder}/$file    
+        echo "Missing required ${file}. You need to run \`wallet create ${name}\` to generate this key."
+        exit 3 # TODO: replace with error code
+    fi
+done
+
+if [ -n "$(check_address_registration ${STAKE_ADDR})" ]; then
+    echo "Your stake address has already been registered in the blockchain."
+    touch "${walletFolder}/transactions/register_stake_address.submitted"
+else
+    echo "Your stake address has not already been registered in the blockchain."
+    rm -f "${walletFolder}/transactions/register_stake_address.submitted"
+fi
