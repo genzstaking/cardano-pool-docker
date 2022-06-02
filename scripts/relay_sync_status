@@ -5,8 +5,8 @@
 source "${SRC_DIR}/functions/wait_for_socket"
 wait_for_socket
 
-GENESIS="${WORK_DIR}/config/${CARDANO_NETWORK}-shelley-genesis.json"
-BYRON_GENESIS="${WORK_DIR}/config/${CARDANO_NETWORK}/byron-genesis.json"
+GENESIS="${WORK_DIR}/config/${CARDANO_NETWORK}net-shelley-genesis.json"
+BYRON_GENESIS="${WORK_DIR}/config/${CARDANO_NETWORK}net-byron-genesis.json"
 
 epoch_length=$(jq -r .epochLength $GENESIS)
 slot_length=$(jq -r .slotLength $GENESIS)
