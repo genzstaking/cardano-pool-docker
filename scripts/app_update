@@ -7,7 +7,7 @@ git pull
 #
 # Upsate permissions
 #
-chmod +x "${SRC_DIR}"
-chmod +x "${SRC_DIR}/functions"
+chmod +x "${SRC_DIR}/*"
+chmod +x "${SRC_DIR}/functions/*"
 
 cd "${WORK_DIR}"

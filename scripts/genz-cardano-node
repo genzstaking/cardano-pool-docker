@@ -161,6 +161,7 @@ case "$command" in
 	app)
 		case "$subcommand" in
 		update)
+			chmod +x "${SRC_DIR}/app_update"
 			"${SRC_DIR}/app_update"
 			exit 0
 			;;
