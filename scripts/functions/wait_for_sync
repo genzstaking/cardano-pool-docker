@@ -1,7 +1,7 @@
 #!/bin/bash
 
 function wait_for_sync {
-    source /scripts/functions/wait_for_socket
+    source "${SRC_DIR}/functions/wait_for_socket"
     wait_for_socket
     WAIT_FOR_SYNC=$1
 
@@ -9,8 +9,9 @@ function wait_for_sync {
     echo -n ""
 
     while true; do
-        SYNC_PCT=$(sync_status | tr ' ' '\n' | tail -1 | sed 's/%//g' | bc)
-        echo -en "\\r== $(sync_status) "
+        status=$("${SRC_DIR}/relay_sync_status")
+        SYNC_PCT=$( $status | tr ' ' '\n' | tail -1 | sed 's/%//g' | bc)
+        echo -en "\\r== $status"
 
         if [[ (($SYNC_PCT > $WAIT_FOR_SYNC)) ]]; then
             echo -e "${CHECK_MARK} Done."
