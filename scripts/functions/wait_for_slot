@@ -5,7 +5,7 @@ function wait_for_slot {
 
     echo "Waiting for slot ${WAIT_FOR_SLOT}"
     while true; do
-        SLOT=$(get_slot)
+        SLOT=$("${SRC_DIR}/relay_get_slot")
 
         if [ "$SLOT" -ge "$WAIT_FOR_SLOT" ]; then
             echo "Reached slot ${WAIT_FOR_SLOT}"

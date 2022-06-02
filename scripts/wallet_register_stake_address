@@ -9,7 +9,6 @@
 source "${SRC_DIR}/functions/check_balance"
 source "${SRC_DIR}/functions/check_address_registration"
 source "${SRC_DIR}/functions/wait_for_address_registration"
-source "${SRC_DIR}/functions/get_slot"
 source "${SRC_DIR}/functions/wait_for_sync"
 
 # Define wallet
@@ -130,7 +129,7 @@ echo "Total Price is: ${TOTAL_PRICE}"
 # Find UTXO in address with enough lovelace to do the transaction
 if [ -z "$COLD_CREATE" ]; then
     check_balance ${TOTAL_PRICE}
-    SLOT=$(get_slot)
+    SLOT=$("${SRC_DIR}/relay_get_slot")
 else
     read -p "Enter the current tip slot: " SLOT
 fi
