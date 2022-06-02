@@ -8,10 +8,9 @@
 
 source "${SRC_DIR}/functions/check_balance"
 #source "${SRC_DIR}/functions/check_address_registration"
-#source "${SRC_DIR}/functions/wait_for_address_registration"
+source "${SRC_DIR}/functions/wait_for_address_registration"
 #source "${SRC_DIR}/functions/wait_for_slot"
 #source "${SRC_DIR}/functions/wait_for_sync"
-#source "${SRC_DIR}/init_node_vars"
 
 # Define wallet
 if [ -z "$name" ]; then
@@ -54,13 +53,11 @@ mkdir -p "$transFolder"
 #    wait_for_sync 99.90
 #fi
 
-#if [ -z "$COLD_CREATE" ]; then
-#    if [ -n "$(check_address_registration ${STAKE_ADDR})" ]; then
-#        echo "Your stake address has already been registered in the blockchain."
-#        touch transactions/register_stake_address.submitted
-#        exit
-#    fi
-#fi
+if [ -n "$(check_address_registration ${STAKE_ADDR})" ]; then
+    echo "Your stake address has already been registered in the blockchain."
+    touch "${walletFolder}/transactions/register_stake_address.submitted"
+    exit
+fi
 
 # Create an address registration certificate
 if [ ! -f "${walletFolder}/stake.cert" ]; then
