@@ -1,13 +1,15 @@
 #!/bin/bash
 
 function wait_for_socket {
-    if [[ -z "$(get_slot 2>/dev/null)" ]]; then
+    slot=$("${SRC_DIR}/relay_get_slot")
+    if [[ -z "$slot" ]]; then
         echo -e "\nWaiting for cardano-node to read the blockchain and start the socket."
         echo -n "It may take a while. Trying again."
         sleep 5
 
         while true; do
-            if [[ -z "$(get_slot 2>/dev/null)" ]]; then
+            slot=$("${SRC_DIR}/relay_get_slot")
+            if [[ -z "$slot" ]]; then
                 echo -n "."
                 sleep 5
             else

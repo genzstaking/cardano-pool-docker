@@ -1,0 +1,4 @@
+#!/bin/bash
+
+source "${SRC_DIR}/functions/wait_for_sync"
+wait_for_sync

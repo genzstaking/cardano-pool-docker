@@ -3,4 +3,11 @@
 cd "${SRC_DIR}/.."
 git reset --hard
 git pull
+
+#
+# Upsate permissions
+#
+chmod +x "${SRC_DIR}"
+chmod +x "${SRC_DIR}/functions"
+
 cd "${WORK_DIR}"
