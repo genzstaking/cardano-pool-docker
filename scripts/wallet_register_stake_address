@@ -7,7 +7,7 @@
 # Init functions and vars
 
 source "${SRC_DIR}/functions/check_balance"
-#source "${SRC_DIR}/functions/check_address_registration"
+source "${SRC_DIR}/functions/check_address_registration"
 source "${SRC_DIR}/functions/wait_for_address_registration"
 #source "${SRC_DIR}/functions/wait_for_slot"
 #source "${SRC_DIR}/functions/wait_for_sync"
