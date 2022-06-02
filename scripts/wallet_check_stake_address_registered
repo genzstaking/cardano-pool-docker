@@ -8,7 +8,6 @@
 
 source "${SRC_DIR}/functions/check_balance"
 source "${SRC_DIR}/functions/check_address_registration"
-source "${SRC_DIR}/functions/wait_for_address_registration"
 
 # Define wallet
 if [ -z "$name" ]; then
@@ -25,7 +24,7 @@ fi
 STAKE_ADDR=$(cat "${walletFolder}/stake.addr")
 
 echo ""
-echo "Checking staking addresses for $name to be registered int the blockchain."
+echo "Checking staking addresses for $name to be registered in the blockchain."
 
 # Check for required files
 files=( \

@@ -5,16 +5,16 @@
 # - NETWORK_ARGUMENT
 function check_address_registration {
     STAKE_ADDR=$1
-    _result="$(docker run --interactive \
+    _result=$(docker run --interactive \
             --env CARDANO_NODE_SOCKET_PATH=/node/node.socket \
-            --volume ${WORK_DIR}/${CARDANO_NETWORK}-relay:/node \
-            --volume $WORK_DIR:/root \
+            --volume "${WORK_DIR}/${CARDANO_NETWORK}-relay:/node" \
+            --volume "$WORK_DIR:/root" \
             --workdir /root \
             genzbank/cardano-cli \
                query stake-address-info \
                --address ${STAKE_ADDR} \
-               ${NETWORK_ARGUMENT})"
-    if [ ! _result == "[]" ]; then
+               ${NETWORK_ARGUMENT})
+    if [ ! "$_result" == "[]" ]; then
         echo "1"
     fi
 }
