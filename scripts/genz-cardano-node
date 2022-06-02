@@ -69,6 +69,12 @@ case "$1" in
 			export subOptions=""
 			shift
 			;;
+		getStakeAddressInfo)
+			export subcommand=$1
+			export subLongOptions=""
+			export subOptions=""
+			shift
+			;;
 		esac
 		;;
 	relay)
@@ -189,6 +195,10 @@ case "$command" in
 			;;
 		checkStakeAddressRegistered)
 			"${SRC_DIR}/wallet_check_stake_address_registered"
+			exit 0
+			;;
+		getStakeAddressInfo)
+			"${SRC_DIR}/wallet_get_stake_address_info"
 			exit 0
 			;;
 		esac
