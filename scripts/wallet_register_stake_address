@@ -123,7 +123,7 @@ FEE=$(docker run --interactive \
        --witness-count 1 \
        --byron-witness-count 0 \
        ${NETWORK_ARGUMENT} \
-       --protocol-params-file protocol.json" | tr ' ' '\n' | head -1)
+       --protocol-params-file protocol.json | tr ' ' '\n' | head -1)
 
 TOTAL_PRICE=$(expr ${FEE} + ${KEY_DEPOSIT})
 echo "Fee is: ${FEE} Lovelace"
