@@ -1,0 +1,28 @@
+#!/bin/bash
+
+baseUrl="https://hydra.iohk.io/job/Cardano/cardano-node/cardano-deployment/latest-finished/download/1"
+files=(\
+    "${CARDANO_NETWORK}net-config.json" \
+    "${CARDANO_NETWORK}net-byron-genesis.json" \
+    "${CARDANO_NETWORK}net-shelley-genesis.json" \
+    "${CARDANO_NETWORK}net-topology.json" \
+    "${CARDANO_NETWORK}net-alonzo-genesis.json" \
+)
+
+mkdir -p "${WORK_DIR}/config"
+echo
+echo "Getting start to download config files"
+echo 
+for file in "${files[@]}"
+do
+    if [ -f "${WORK_DIR}/config/$file" ]; then
+        echo "Config fiel exist: $file, use 'config update' command to replace with new verison."
+        continue
+    fi
+    wget "$baseUrl/$file" \
+        --quiet \
+        --output-document "${WORK_DIR}/config/$file"
+    echo "Config file is created: $file"
+done
+
+

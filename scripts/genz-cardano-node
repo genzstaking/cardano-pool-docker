@@ -39,6 +39,26 @@ case "$1" in
 			;;
 		esac
 		;;
+	config)
+		export command=$1
+		export longOptions=",name:"
+		export options=""
+		shift
+		case "$1" in
+		create)
+			export subcommand=$1
+			export subLongOptions=""
+			export subOptions=""
+			shift
+			;;
+		update)
+			export subcommand=$1
+			export subLongOptions=""
+			export subOptions=""
+			shift
+			;;
+		esac
+		;;
 	wallet)
 		export command=$1
 		export longOptions=",name:"
@@ -103,6 +123,19 @@ case "$1" in
 			;;
 		esac
 		;;
+	staking)
+		export command=$1
+		export longOptions=""
+		export options=""
+		shift
+		case "$1" in
+		generateOperationalCertificate)
+			export subcommand=$1
+			export subLongOptions=",tip:"
+			export subOptions=""
+			;;
+		esac
+		;;
 	pooltool|node|cli)
 		export command=$1
 		export longOptions=""
@@ -113,7 +146,6 @@ case "$1" in
 		echo "Command not supported $1"
 		exit 5 # TOOD use constant
 esac
-
 
 # $@ is all command line parameters passed to the script.
 # -o is for short options like -v
@@ -153,6 +185,10 @@ while true; do
 		export name=$2
 		shift 2
 		;;
+	--tip)
+		export tip=$2
+		shift 2
+		;;
 	--)
 		shift
 		break;;
@@ -175,6 +211,18 @@ case "$command" in
 		update)
 			chmod +x "${SRC_DIR}/app_update"
 			"${SRC_DIR}/app_update"
+			exit 0
+			;;
+		esac
+		;;
+	config)
+		case "$subcommand" in
+		create)
+			"${SRC_DIR}/config_create"
+			exit 0
+			;;
+		update)
+			"${SRC_DIR}/config_update"
 			exit 0
 			;;
 		esac
@@ -215,6 +263,14 @@ case "$command" in
 			;;
 		waitForSync)
 			"${SRC_DIR}/relay_wait_for_sync"
+			exit 0
+			;;
+		esac
+		;;
+	staking)
+		case "$subcommand" in
+		generateOperationalCertificate)
+			"${SRC_DIR}/staking_generate_operational_certificate"
 			exit 0
 			;;
 		esac

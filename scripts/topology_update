@@ -43,6 +43,6 @@ else
     if [[ -n "$AUTO_RESTART" ]]; then
         echo -en "\nRestarting cardano-node ..."
         killall -9 cardano-node
-        echo -e " ${CHECK_MARK} Done."
+        echo -e " ${CHECKget_slot_MARK} Done."
     fi
 fi
