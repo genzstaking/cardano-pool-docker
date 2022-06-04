@@ -75,7 +75,7 @@ METADATA_HASH=$(docker run --interactive \
 echo "metadata.json hash: ${METADATA_HASH}"
 
 # 3. Generate Stake pool registration certificate
-if [ ! -f "${stakingDir}/pool.cert" ] ; then
+if [ -f "${stakingDir}/pool.cert" ] ; then
     echo "pool.cert already exists."
     echo "backing up pool.cert."
     cp "${stakingDir}/pool.cert" pool.${TIMESTAMP}.cert
