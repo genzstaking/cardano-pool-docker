@@ -78,7 +78,7 @@ echo "metadata.json hash: ${METADATA_HASH}"
 if [ ! -f "${stakingDir}/pool.cert" ] ; then
     echo "pool.cert already exists."
     echo "backing up pool.cert."
-    cp "${stakingDir}pool.cert" pool.${TIMESTAMP}.cert
+    cp "${stakingDir}/pool.cert" pool.${TIMESTAMP}.cert
 fi
 
 if [ "${relayIp}" == "TOPOLOGY" ]; then
