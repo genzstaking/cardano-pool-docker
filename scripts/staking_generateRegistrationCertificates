@@ -1,0 +1,180 @@
+#!/bin/bash
+
+# From Documentation
+# https://github.com/input-output-hk/cardano-tutorials/blob/ecbfd0ec06e0515701ee3749ce96780c27d2249d/node-setup/080_register_stakepool.md
+
+# Init vars
+source "${SRC_DIR}/functions/get_public_ip"
+source "${SRC_DIR}/functions/stakepool_info"
+TIMESTAMP=$(date +%s)
+
+# To check owner wallet
+if [ -z "$relayWallet" ]; then
+	export relayWallet="main"
+fi
+relayWalletDir="${WORK_DIR}/wallets/${relayWallet}"
+
+# Enter staking directory
+stakingDir="${WORK_DIR}/${CARDANO_NETWORK}-staking"
+
+echo ""
+echo "Generate registration certificates"
+
+# Check for required files
+if [ ! -f "${relayWalletDir}/stake.vkey" ]; then
+    echo "Missing required owner stake.vkey. You need to run \`wallet create --name=${relayWallet}\` to generate this key."
+    exit 4 # TODO: maso, 2022: replace with error code
+fi
+
+if [ ! -f "${stakingDir}/cold-keys/cold.vkey" ]; then
+    echo "Missing required cold-keys/cold.vkey. You need to run \`staking generateOperationalCertificate --network=${CARDANO_NETWORK}\` to generate this key."
+    exit 4 # TODO: maso, 2022: replace with error code
+fi
+
+if [ ! -f "${stakingDir}/pool-keys/vrf.vkey" ]; then
+    echo "Missing required pool-keys/vrf.vkey. You need to run \`staking generateOperationalCertificate --network=${CARDANO_NETWORK}\` to generate this key."
+    exit 4 # TODO: maso, 2022: replace with error code
+fi
+
+
+if [ -z "$metadataUrl" ]; then
+    echo "Missing METADATA_URL You need to upload your metadata.json file and use --metadata={url}."
+    exit
+fi
+
+# # Handle arguments
+# for i in "$@"
+# do
+#     case $i in
+#         --update)
+#             UPDATE_CERT=1
+#         ;;
+#         --cold-create)
+#             COLD_CREATE=1
+#         ;;
+#     esac
+# done
+
+# 1. Create a JSON file with your pool's metadata
+echo "Getting metadata file from ${metadataUrl}"
+wget -O "${stakingDir}/metadata.json" ${metadataUrl}
+# TODO: maso, 2022: check if file is downloaded
+if [ ! -f "${stakingDir}/metadata.json" ]; then
+    echo "Meta data file not found."
+    exit 4
+fi
+
+# 2. get hash of file
+echo "Getting hash of metadata.json"
+METADATA_HASH=$(docker run --interactive \
+    --volume "${stakingDir}:/root" \
+    --workdir /root \
+    genzbank/cardano-cli \
+    stake-pool metadata-hash \
+        --pool-metadata-file metadata.json)
+echo "metadata.json hash: ${METADATA_HASH}"
+
+# 3. Generate Stake pool registration certificate
+if [ ! -f "${stakingDir}/pool.cert" ] ; then
+    echo "pool.cert already exists."
+    echo "backing up pool.cert."
+    cp "${stakingDir}pool.cert" pool.${TIMESTAMP}.cert
+fi
+
+if [ "${relayIp}" == "TOPOLOGY" ]; then
+    PUBLIC_RELAY_IP=$(jq -r ".Producers[0].addr" ${stakingDir}/topology.json)
+    PUBLIC_RELAY_PORT=$(jq -r ".Producers[0].port" ${stakingDir}/topology.json)
+fi
+if [ "${relayIp}" == "PUBLIC" ]; then
+    PUBLIC_RELAY_IP=$(get_public_ip)
+fi
+if [ -z "$PUBLIC_RELAY_PORT" ]; then
+    PUBLIC_RELAY_PORT=$(jq -r ".Producers[0].port" ${stakingDir}/topology.json)
+fi
+
+echo "Generating pool.cert"
+stakepool_info
+echo "Public Relay IP: ${relayIp}"
+echo "Public Relay Port: ${PUBLIC_RELAY_PORT}"
+
+# TODO: maso, 2022: check if ther is multiowner
+# Multiple owners
+if [ -n "$MULTI_OWNERS" ]; then
+    echo "Multiple owners"
+    for i in $(echo ${MULTI_OWNERS} | sed "s/,/ /g")
+    do
+        echo "$i"
+        MULTIOWNERS_STRING="${MULTIOWNERS_STRING} --pool-owner-stake-verification-key-file wallets/${i}/stake.vkey"
+    done
+    echo $MULTIOWNERS_STRING
+    echo ""
+fi
+docker run --interactive \
+    --volume "${stakingDir}:/root" \
+    --volume "${WORK_DIR}/wallets:/wallets" \
+    --workdir /root \
+    genzbank/cardano-cli \
+    stake-pool registration-certificate \
+        --cold-verification-key-file "cold-keys/cold.vkey" \
+        --vrf-verification-key-file "pool-keys/vrf.vkey" \
+        --pool-pledge ${poolPledge} \
+        --pool-cost ${poolCost} \
+        --pool-margin ${poolMargin} \
+        --pool-reward-account-verification-key-file /wallets/${rewardWallet}/stake.vkey \
+        --pool-owner-stake-verification-key-file /wallets/${rewardWallet}/stake.vkey \
+        ${MULTIOWNERS_STRING} \
+        --pool-relay-port ${PUBLIC_RELAY_PORT} \
+        --pool-relay-ipv4 ${relayIp} \
+        --metadata-url ${metadataUrl} \
+        --metadata-hash ${METADATA_HASH} \
+        ${NETWORK_ARGUMENT} \
+        --out-file pool.cert \
+&& echo "Generated pool.cert"
+
+PAYMENT_ADDR=$(cat "${WORK_DIR}/wallets/${rewardWallet}/payment.addr")
+STAKE_ADDR=$(cat "${WORK_DIR}/wallets/${rewardWallet}/stake.addr")
+POOL_ID=$(cat "${stakingDir}/POOL_ID")
+
+echo "export POOL_PLEDGE=${poolPledge}" > POOL_VARS
+echo "export POOL_COST=${poolCost}" >> POOL_VARS
+echo "export POOL_MARGIN=${poolMargin}" >> POOL_VARS
+echo "export POOL_MARGIN=${poolMargin}" >> POOL_VARS
+echo "export PAYMENT_ADDR=${PAYMENT_ADDR}" >> POOL_VARS
+echo "export STAKE_ADDR=${STAKE_ADDR}" >> POOL_VARS
+echo "export POOL_ID=${POOL_ID}" >> POOL_VARS
+echo "export MULTI_OWNERS=${MULTI_OWNERS}" >> POOL_VARS
+echo ""
+
+# 2. Generate delegation certificate (pledge)
+if [ ! -f "wallets/${rewardWallet}/delegation.cert" ]; then
+    docker run --interactive \
+        --volume "${stakingDir}:/root" \
+        --volume "${WORK_DIR}/wallets:/wallets" \
+        --workdir /root \
+        genzbank/cardano-cli \
+            stake-address delegation-certificate \
+                --stake-verification-key-file "/wallets/${rewardWallet}/stake.vkey" \
+                --cold-verification-key-file "cold-keys/cold.vkey" \
+                --out-file "/wallets/${rewardWallet}/delegation.cert" \
+    && echo "Generated delegation.cert"
+else
+    echo "delegation.cert already exists."
+fi
+
+# Multiple owners
+if [ -n "$MULTI_OWNERS" ]; then
+    echo "Generating delegation certificates for multiple owners"
+    for i in $(echo ${MULTI_OWNERS} | sed "s/,/ /g")
+    do
+        echo "- $i"
+        if [ ! -f "wallets/$i/delegation.cert" ]; then
+            cardano-cli stake-address delegation-certificate \
+                --stake-verification-key-file wallets/$i/stake.vkey \
+                --cold-verification-key-file cold-keys/cold.vkey \
+                --out-file wallets/$i/delegation.cert \
+            && echo "-- generated delegation.cert"
+        else
+            echo "-- delegation.cert already exists."
+        fi
+    done
+fi

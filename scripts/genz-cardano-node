@@ -142,7 +142,7 @@ case "$1" in
 			;;
 		generateRegistrationCertificates)
 			export subcommand=$1
-			export subLongOptions=",tip:"
+			export subLongOptions=",reward-wallet:,owners:metadata-url:relay-ip:pool-pledge:pool-cost:pool-margin:"
 			export subOptions=""
 			;;
 		esac
@@ -205,6 +205,34 @@ while true; do
 		;;
 	--tip)
 		export tip=$2
+		shift 2
+		;;
+	--reward-wallet)
+		export rewardWallet=$2
+		shift 2
+		;;
+	--owners)
+		export owners=$2
+		shift 2
+		;;
+	--metadata-url)
+		export metadataUrl=$2
+		shift 2
+		;;
+	--relay-ip)
+		export relayIp=$2
+		shift 2
+		;;
+	--pool-pledge)
+		export poolPledge=$2
+		shift 2
+		;;
+	--pool-cost)
+		export poolCost=$2
+		shift 2
+		;;
+	--pool-margin)
+		export poolMargin=$2
 		shift 2
 		;;
 	--)

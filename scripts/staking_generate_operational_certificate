@@ -30,7 +30,7 @@ if [ -d "${WORK_DIR}/${CARDANO_NETWORK}-staking/pool-keys/" ]; then
         "${WORK_DIR}/${CARDANO_NETWORK}-staking/pool-keys/" > /dev/null
 fi
 
-if [ -d "cold-keys/" ]; then
+if [ -d "${WORK_DIR}/${CARDANO_NETWORK}-staking/cold-keys/" ]; then
     BACKUPNAME=cold-keys.$(date +%s).tar.gz
     echo "Backing up to ${BACKUPNAME} before creating new KES keys."
     mkdir -p "${WORK_DIR}/backups/"
@@ -40,7 +40,7 @@ if [ -d "cold-keys/" ]; then
 fi
 
 # Create cold key
-if [ ! -f "cold-keys/cold.skey" ]; then
+if [ ! -f "${WORK_DIR}/${CARDANO_NETWORK}-staking/cold-keys/cold.skey" ]; then
     echo "Creating cold keys."
     echo "Warning: The cold keys should NOT be kept on your server. You should backup your cold keys and delete them from the server."
     echo "Alternatively you can generate the keys on a seperate offline node, and move all the neccessary certificates and keys to the active staking node."
