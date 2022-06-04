@@ -142,7 +142,7 @@ case "$1" in
 			;;
 		generateRegistrationCertificates)
 			export subcommand=$1
-			export subLongOptions=",reward-wallet:,owners:metadata-url:relay-ip:pool-pledge:pool-cost:pool-margin:"
+			export subLongOptions=",reward-wallet:,owners:,metadata-url:,relay-ip:,pool-pledge:,pool-cost:,pool-margin:"
 			export subOptions=""
 			;;
 		esac
