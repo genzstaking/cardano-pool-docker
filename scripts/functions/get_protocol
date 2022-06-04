@@ -1,6 +1,0 @@
-#!/bin/bash
-
-# Init vars
-source /scripts/init_node_vars
-
-cardano-cli query protocol-parameters ${NETWORK_ARGUMENT} --out-file protocol.json

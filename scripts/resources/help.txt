@@ -3,12 +3,18 @@ genz-cardano-node [Command] [Subommand] [Options]
 
 Commands:
 
-pooltool
-node
-cli
+app
+config
+relay
+staking
 wallet
 
 Options:
+
+--help                        Display this message.
+--version
+--verbose
+--network                     The network name (test, main)
 
 start                         Start basic node.
 staking                       Start as a staking node (Also requires the \`start\` argument)
@@ -18,9 +24,6 @@ cold-register                 Submits the address and pool registration transact
 cli                           Start command-line interface.
 init-config                   Initialize config.
 init-pooltool                 Initialize pooltool config.
---help                        Display this message.
---version
---verbose
 
 
 Environment variables:

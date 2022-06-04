@@ -4,6 +4,8 @@ Wallet is store in a folder with name ot the wallet. fro example a wallet with n
 
 Options:
 
+--name
+
 Examples:
 
 To display wallet help:

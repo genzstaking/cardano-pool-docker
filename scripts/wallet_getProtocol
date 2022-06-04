@@ -1,0 +1,21 @@
+#!/bin/bash
+
+# Init vars
+source /scripts/init_node_vars
+
+echo 
+echo "Getting protocole parameters for wallet ${name}"
+echo
+docker run --interactive \
+    --env CARDANO_NODE_SOCKET_PATH=/node/node.socket \
+    --volume "${WORK_DIR}/${CARDANO_NETWORK}-relay:/node" \
+    --volume "${WORK_DIR}/wallets/${name}/:/root" \
+    --workdir /root \
+    genzbank/cardano-cli \
+        query protocol-parameters \
+        ${NETWORK_ARGUMENT} \
+        --out-file "${WORK_DIR}/wallets/${name}/protocol.json"
+
+echo 
+cat "${WORK_DIR}/wallets/${name}/protocol.json"
+echo

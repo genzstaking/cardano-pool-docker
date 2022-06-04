@@ -95,6 +95,12 @@ case "$1" in
 			export subOptions=""
 			shift
 			;;
+		getProtocol)
+			export subcommand=$1
+			export subLongOptions=""
+			export subOptions=""
+			shift
+			;;
 		esac
 		;;
 	relay)
@@ -134,13 +140,25 @@ case "$1" in
 			export subLongOptions=",tip:"
 			export subOptions=""
 			;;
+		generateRegistrationCertificates)
+			export subcommand=$1
+			export subLongOptions=",tip:"
+			export subOptions=""
+			;;
 		esac
 		;;
-	pooltool|node|cli)
+	util)
 		export command=$1
 		export longOptions=""
 		export options=""
 		shift
+		case "$1" in
+		getPublicIP)
+			export subcommand=$1
+			export subLongOptions=""
+			export subOptions=""
+			;;
+		esac
 		;;
 	*)
 		echo "Command not supported $1"
@@ -247,7 +265,9 @@ case "$command" in
 			;;
 		getStakeAddressInfo)
 			"${SRC_DIR}/wallet_get_stake_address_info"
-			exit 0
+			;;
+		getProtocol)
+			"${SRC_DIR}/${command}_${subcommand}"
 			;;
 		esac
 		;;
@@ -275,7 +295,15 @@ case "$command" in
 			;;
 		esac
 		;;
+	util)
+		case "$1" in
+		getPublicIP)
+			"${SRC_DIR}/util_getPublicIP"
+			;;
+		esac
+		;;
 esac
+exit 0
 ####################################################################
 #                       node
 ####################################################################
