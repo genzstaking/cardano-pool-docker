@@ -1,8 +1,8 @@
 #!/bin/bash
 
 function stakepool_info {
-    if [ -f "${NODE_PATH}/staking/metadata.json" ]; then
-        METADATA=${NODE_PATH}/staking/metadata.json
+    METADATA="${WORK_DIR}/${CARDANO_NETWORK}-staking/metadata.json"
+    if [ -f "${METADATA}" ]; then
         
         POOL_NAME=$(jq -r '.name' $METADATA)
         POOL_DESCRIPTION=$(jq -r '.description' $METADATA)
@@ -15,7 +15,7 @@ function stakepool_info {
         echo "Pool Homepage: ${POOL_HOMEPAGE}"
     fi
 
-    echo "Pool Pledge: ${POOL_PLEDGE}"
-    echo "Pool Cost: ${POOL_COST}"
-    echo "Pool Margin: ${POOL_MARGIN}"
+    echo "Pool Pledge: ${poolPledge}"
+    echo "Pool Cost: ${poolCost}"
+    echo "Pool Margin: ${poolMargin}"
 }

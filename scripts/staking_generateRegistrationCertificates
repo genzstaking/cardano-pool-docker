@@ -120,8 +120,8 @@ docker run --interactive \
         --pool-pledge ${poolPledge} \
         --pool-cost ${poolCost} \
         --pool-margin ${poolMargin} \
-        --pool-reward-account-verification-key-file /wallets/${rewardWallet}/stake.vkey \
-        --pool-owner-stake-verification-key-file /wallets/${rewardWallet}/stake.vkey \
+        --pool-reward-account-verification-key-file "/wallets/${rewardWallet}/stake.vkey" \
+        --pool-owner-stake-verification-key-file "/wallets/${rewardWallet}/stake.vkey" \
         ${MULTIOWNERS_STRING} \
         --pool-relay-port ${PUBLIC_RELAY_PORT} \
         --pool-relay-ipv4 ${relayIp} \
