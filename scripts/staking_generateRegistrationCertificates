@@ -94,7 +94,7 @@ fi
 
 echo "Generating pool.cert"
 stakepool_info
-echo "Public Relay IP: ${relayIp}"
+echo "Public Relay IP: ${PUBLIC_RELAY_IP}"
 echo "Public Relay Port: ${PUBLIC_RELAY_PORT}"
 
 # TODO: maso, 2022: check if ther is multiowner
@@ -124,7 +124,7 @@ docker run --interactive \
         --pool-owner-stake-verification-key-file "/wallets/${rewardWallet}/stake.vkey" \
         ${MULTIOWNERS_STRING} \
         --pool-relay-port ${PUBLIC_RELAY_PORT} \
-        --pool-relay-ipv4 ${relayIp} \
+        --pool-relay-ipv4 ${PUBLIC_RELAY_IP} \
         --metadata-url ${metadataUrl} \
         --metadata-hash ${METADATA_HASH} \
         ${NETWORK_ARGUMENT} \
