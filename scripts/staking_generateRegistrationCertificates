@@ -146,7 +146,7 @@ echo "export MULTI_OWNERS=${MULTI_OWNERS}" >> POOL_VARS
 echo ""
 
 # 2. Generate delegation certificate (pledge)
-if [ ! -f "wallets/${rewardWallet}/delegation.cert" ]; then
+if [ -f "wallets/${rewardWallet}/delegation.cert" ]; then
     docker run --interactive \
         --volume "${stakingDir}:/root" \
         --volume "${WORK_DIR}/wallets:/wallets" \
