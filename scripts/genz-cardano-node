@@ -237,7 +237,8 @@ while true; do
 		;;
 	--)
 		shift
-		break;;
+		break
+	;;
 	esac
 done
 #if [ -z "$1" ]; then
@@ -315,20 +316,9 @@ case "$command" in
 			;;
 		esac
 		;;
-	staking)
-		case "$subcommand" in
-		generateOperationalCertificate)
-			"${SRC_DIR}/staking_generate_operational_certificate"
-			exit 0
-			;;
-		esac
-		;;
-	util)
-		case "$1" in
-		getPublicIP)
-			"${SRC_DIR}/util_getPublicIP"
-			;;
-		esac
+	util|staking)
+		"${SRC_DIR}/${command}_${subcommand}"
+		exit 0
 		;;
 esac
 exit 0
