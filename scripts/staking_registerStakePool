@@ -114,7 +114,7 @@ if [ -z "$update" ]; then
 else
     echo "Try to update"
     POOL_DEPOSIT=0
-#fi
+fi
 
 # Find UTXO in address with enough lovelace to do the transaction
 ADDRESS=$(cat "wallets/${rewardWallet}/payment.addr")
