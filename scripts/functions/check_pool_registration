@@ -1,7 +1,7 @@
 #!/bin/bash
 
 function check_pool_registration {
-    POOL_ID=$(cat "${WORKI_DIR}/${CARDANO_NETWORK}-staking/POOL_ID")
+    POOL_ID=$(cat "${WORK_DIR}/${CARDANO_NETWORK}-staking/POOL_ID")
     docker run --interactive \
     --env CARDANO_NODE_SOCKET_PATH=/node/node.socket \
     --volume "${WORK_DIR}/${CARDANO_NETWORK}-relay:/node" \
