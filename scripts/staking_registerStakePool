@@ -239,7 +239,7 @@ OUT=$(docker run --interactive \
     --workdir /root \
     genzbank/cardano-cli \
     transaction submit \
-    --tx-file wallets/${rewardWallet}/transactions/register_stake_pool.signed \
+    --tx-file "/wallets/${rewardWallet}/transactions/register_stake_pool.signed" \
     ${NETWORK_ARGUMENT} 2>&1)
 
 if [[ $OUT =~ "Error" ]]
