@@ -39,7 +39,7 @@ if [ ! -f "${stakingDir}/cold-keys/cold.skey" ]; then
     exit 4 # TODO: maso: 2022: 
 fi
 
-if [ ! -f "${rewardWallet}/pool.cert" ]; then
+if [ ! -f "${staking}/pool.cert" ]; then
     echo "Missing required pool.cert. You need to run \`staking generateRegistrationCertificate\` to generate this certificate."
     exit 4 # TODO: maso: 2022: 
 fi
