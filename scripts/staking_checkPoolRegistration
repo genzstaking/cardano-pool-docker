@@ -1,0 +1,4 @@
+#!/bin/bash
+
+source "${SRC_DIR}/functions/check_pool_registration"
+check_pool_registration

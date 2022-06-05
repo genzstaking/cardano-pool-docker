@@ -150,6 +150,11 @@ case "$1" in
 			export subLongOptions=",reward-wallet:,owners:"
 			export subOptions=""
 			;;
+		checkPoolRegistration)
+			export subcommand=$1
+			export subLongOptions=""
+			export subOptions=""
+			;;
 		esac
 		;;
 	util)

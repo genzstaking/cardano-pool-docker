@@ -176,7 +176,7 @@ echo "Total Price is: ${TOTAL_PRICE} Lovelace"
 # Find UTXO in address with enough lovelace to do the transaction
 #if [ -z "$COLD_CREATE" ]; then
     check_balance ${TOTAL_PRICE}
-    SLOT=$(get_slot)
+    SLOT=$("${SRC_DIR}/relay_get_slot")
 #else
 #    read -p "Enter the current tip slot: " SLOT
 #fi
@@ -231,7 +231,14 @@ docker run --interactive \
 read -n 1 -r -s -p $'Press enter to submit the certificates...\n'
 
 echo "Submit transaction"
-OUT=$(cardano-cli transaction submit \
+OUT=$(docker run --interactive \
+    --env CARDANO_NODE_SOCKET_PATH=/node/node.socket \
+    --volume "${WORK_DIR}/${CARDANO_NETWORK}-relay:/node" \
+    --volume "${WORK_DIR}/wallets:/wallets" \
+    --volume "${stakingDir}:/root" \
+    --workdir /root \
+    genzbank/cardano-cli \
+    transaction submit \
     --tx-file wallets/${rewardWallet}/transactions/register_stake_pool.signed \
     ${NETWORK_ARGUMENT} 2>&1)
 
@@ -248,5 +255,5 @@ else
     #wait_for_slot ${TTL}
     wait_for_pool_registration
     echo "Your stake pool registration has been sent to the blockchain."
-    touch ${NODE_PATH}/staking/wallets/${rewardWallet}/transactions/register_stake_pool.submitted
+    touch "${WORK_DIR}/wallets/${rewardWallet}/transactions/register_stake_pool.submitted"
 fi

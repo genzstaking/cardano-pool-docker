@@ -1,8 +1,11 @@
 #!/bin/bash
 
 function check_pool_registration {
-    source /scripts/init_node_vars
-
-    POOL_ID=$(cat ${NODE_PATH}/staking/POOL_ID)
-    cardano-cli query ledger-state ${NETWORK_ARGUMENT} | grep publicKey | grep ${POOL_ID}
+    POOL_ID=$(cat "${WORKI_DIR}/${CARDANO_NETWORK}-staking/POOL_ID")
+    docker run --interactive \
+    --env CARDANO_NODE_SOCKET_PATH=/node/node.socket \
+    --volume "${WORK_DIR}/${CARDANO_NETWORK}-relay:/node" \
+    genzbank/cardano-cli \
+        query ledger-state \
+        ${NETWORK_ARGUMENT} | grep publicKey | grep ${POOL_ID}
 }

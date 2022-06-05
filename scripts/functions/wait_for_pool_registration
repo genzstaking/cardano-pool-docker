@@ -1,7 +1,7 @@
 #!/bin/bash
 
 function wait_for_pool_registration {
-    source /scripts/functions/check_pool_registration
+    source "${SRC_DIR}/functions/check_pool_registration"
 
     echo "Waiting for the blockchain to register the pool."
     while true; do
