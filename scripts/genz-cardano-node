@@ -101,6 +101,12 @@ case "$1" in
 			export subOptions=""
 			shift
 			;;
+		merge)
+			export subcommand=$1
+			export subLongOptions=""
+			export subOptions=""
+			shift
+			;;
 		esac
 		;;
 	relay)
@@ -305,7 +311,7 @@ case "$command" in
 		getStakeAddressInfo)
 			"${SRC_DIR}/wallet_get_stake_address_info"
 			;;
-		getProtocol)
+		getProtocol|merge)
 			"${SRC_DIR}/${command}_${subcommand}"
 			;;
 		esac

@@ -22,7 +22,7 @@
       --reward-wallet main \
       --owners genz,wallet2,wallet3 \
       --relay-ip PUBLIC \
-      --pool-cost 340 \
+      --pool-cost 340000000 \
       --pool-margin 0.01 \
       --pool-pledge 0 \
       --metadata-url https://raw.githubusercontent.com/genz-pool/genz-pool.github.io/main/metadata-cardano.json

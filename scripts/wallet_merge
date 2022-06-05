@@ -1,0 +1,76 @@
+#!/bin/bash
+
+if [ -z "$name" ]; then
+	export name="main"
+fi
+
+# Check for required files
+if [ ! -f "${WORK_DIR}/wallets/${name}/payment.addr" ]; then
+    echo "Missing required payment.addr. You need to run \`wallet create --name ${name}\` to generate this key."
+    echo "Or use \`--name wallet_name\` to select an existed wallet."
+    exit 3 #TODO $ERROR_CODE_MISSING
+fi
+
+# Wait for node to sync
+if [[ "${WAIT_FOR_SYNC}" == "True" ]]; then
+   # wait_for_sync 99.90
+   echo "Wait for sync is not supported."
+   exit 1
+fi
+
+ADDRESS=$(cat "${WORK_DIR}/wallets/${name}/payment.addr")
+
+#docker run --interactive \
+#    --env CARDANO_NODE_SOCKET_PATH=/node/node.socket \
+#    --volume "${WORK_DIR}/${CARDANO_NETWORK}-relay:/node" \
+#    --volume $PWD:/root \
+#    --workdir /root \
+#    genzbank/cardano-cli \
+#        query utxo ${NETWORK_ARGUMENT} \
+#        --address ${ADDRESS}
+
+count=0
+txInString=""
+REMAINING=0
+while true; do
+    echo ""
+    echo "Checking balance for address ${ADDRESS}."
+    echo ""
+
+    TOTAL_LOVELACE=0
+    
+    UTXOS=$(docker run --interactive \
+        --env CARDANO_NODE_SOCKET_PATH=/node/node.socket \
+        --volume "${WORK_DIR}/${CARDANO_NETWORK}-relay:/node" \
+        --volume $WORK_DIR:/root \
+        --workdir /root \
+        genzbank/cardano-cli \
+            query utxo ${NETWORK_ARGUMENT} \
+            --address ${ADDRESS} | tail -n +3)
+    echo "UTXO#TXIX: LOVELACE"
+    while IFS= read -r line ; do
+        arr=(${line})
+        LOVELACE=${arr[2]}
+        #TOTAL_LOVELACE=$(expr ${TOTAL_LOVELACE} + ${LOVELACE})
+
+        if [ -n "${LOVELACE}" ]; then
+            echo "${arr[0]}#${arr[1]}: ${arr[2]}"
+            REMAINING=$(expr ${LOVELACE} + ${REMAINING})
+            txInString="$txInString --tx-in ${arr[0]}#${arr[1]}"
+            count=$(expr ${count} + 1)
+        fi
+    done <<< "${UTXOS}"
+
+    echo "Address is successfully funded."
+    echo ""
+    echo "Got UTXO"
+    echo "UTXO count: ${count}"
+    echo "Total amount: ${REMAINING}"
+    if [ "$count" -gt 2 ]; then
+        echo "Getting start to merge"
+        break
+    fi
+    echo "Nothing merge"
+    exit 0
+done
+echo $txInString
