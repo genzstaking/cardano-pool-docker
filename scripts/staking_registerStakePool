@@ -107,9 +107,12 @@ docker run --interactive \
 #fi
 
 # Get pool-deposit
-#if [ -z "$UPDATE" ]; then
-#    POOL_DEPOSIT=$(jq -r .stakePoolDeposit protocol.json)
-#else
+if [ -z "$update" ]; then
+    echo "Note This is first time to register. If you want to update use --update option"
+    # TODO: maso, 2022: add update option
+    POOL_DEPOSIT=$(jq -r .stakePoolDeposit protocol.json)
+else
+    echo "Try to update"
     POOL_DEPOSIT=0
 #fi
 
@@ -138,7 +141,7 @@ fi
 docker run --interactive \
     --env CARDANO_NODE_SOCKET_PATH=/node/node.socket \
     --volume "${WORK_DIR}/${CARDANO_NETWORK}-relay:/node" \
-    --volume "${WORK_DIR}/wallets:/wallets" \
+    --volume "${WORK_DIR}/wallets:/walletsREMAINING_AFTER_TX" \
     --volume "${stakingDir}:/root" \
     --workdir /root \
     genzbank/cardano-cli \
