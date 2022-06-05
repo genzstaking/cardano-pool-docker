@@ -145,6 +145,11 @@ case "$1" in
 			export subLongOptions=",reward-wallet:,owners:,metadata-url:,relay-ip:,pool-pledge:,pool-cost:,pool-margin:"
 			export subOptions=""
 			;;
+		registerStakePool)
+			export subcommand=$1
+			export subLongOptions=",reward-wallet:,owners:"
+			export subOptions=""
+			;;
 		esac
 		;;
 	util)
