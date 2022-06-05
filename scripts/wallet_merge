@@ -1,5 +1,6 @@
 #!/bin/bash
 
+TIMESTAMP=$(date +%s)
 if [ -z "$name" ]; then
 	export name="main"
 fi
@@ -66,7 +67,7 @@ while true; do
     echo "Got UTXO"
     echo "UTXO count: ${count}"
     echo "Total amount: ${REMAINING}"
-    if [ "$count" -gt 2 ]; then
+    if [ "$count" -gt 1 ]; then
         echo "Getting start to merge"
         break
     fi
@@ -74,3 +75,114 @@ while true; do
     exit 0
 done
 echo $txInString
+
+
+mkdir -p "${WORK_DIR}/wallets/${name}/transactions/"
+
+docker run --interactive \
+    --env CARDANO_NODE_SOCKET_PATH=/node/node.socket \
+    --volume "${WORK_DIR}/${CARDANO_NETWORK}-relay:/node" \
+    --volume "${WORK_DIR}/wallets/${name}:/root" \
+    --workdir /root \
+    genzbank/cardano-cli \
+    query protocol-parameters \
+        ${NETWORK_ARGUMENT} \
+        --out-file protocol.json
+
+# Draft transaction
+docker run --interactive \
+    --env CARDANO_NODE_SOCKET_PATH=/node/node.socket \
+    --volume "${WORK_DIR}/${CARDANO_NETWORK}-relay:/node" \
+    --volume "${WORK_DIR}/wallets/${name}:/root" \
+    --workdir /root \
+    genzbank/cardano-cli \
+    transaction build-raw \
+        ${txInString} \
+        --tx-out ${TO_ADDR}+0 \
+        --ttl 0 \
+        --fee 0 \
+        --out-file transactions/tx.${TIMESTAMP}.draft
+
+
+
+FEE=$(docker run --interactive \
+    --env CARDANO_NODE_SOCKET_PATH=/node/node.socket \
+    --volume "${WORK_DIR}/${CARDANO_NETWORK}-relay:/node" \
+    --volume "${WORK_DIR}/wallets/${name}:/root" \
+    --workdir /root \
+    genzbank/cardano-cli \
+    transaction calculate-min-fee \
+        --tx-body-file transactions/tx.${TIMESTAMP}.draft \
+        --tx-in-count ${count} \
+        --tx-out-count 1 \
+        ${NETWORK_ARGUMENT} \
+        --witness-count 1 \
+        --byron-witness-count 0 \
+        --protocol-params-file protocol.json | tr ' ' '\n' | head -1)
+
+
+# Update slot and TTL
+SLOT=$(${SRC_DIR}/relay_get_slot)
+TTL=$(expr ${SLOT} + 500)
+
+# Display transaction info
+RECEIVE_LOVELACE=$(expr ${REMAINING} - ${FEE})
+echo "Creating transaction"
+echo "Current tip Slot: ${SLOT}"
+echo "TTL: ${TTL}"
+echo ""
+echo "To address: ${ADDRESS}"
+echo "Send amount: ${RECEIVE_LOVELACE} Lovelace"
+echo "Fee is: ${FEE} Lovelace"
+echo "Balance after transaction: ${RECEIVE_LOVELACE} Lovelace"
+
+
+
+
+#
+# Create the transaction
+#
+echo "Create transaction"
+docker run --interactive \
+    --env CARDANO_NODE_SOCKET_PATH=/node/node.socket \
+    --volume "${WORK_DIR}/${CARDANO_NETWORK}-relay:/node" \
+    --volume "${WORK_DIR}/wallets/${name}:/root" \
+    --workdir /root \
+    genzbank/cardano-cli \
+    transaction build-raw \
+        ${txInString} \
+        --tx-out ${ADDRESS}+${RECEIVE_LOVELACE} \
+        --ttl ${TTL} \
+        --fee ${FEE} \
+        --out-file transactions/tx.${TIMESTAMP}.raw
+
+docker run --interactive \
+    --env CARDANO_NODE_SOCKET_PATH=/node/node.socket \
+    --volume "${WORK_DIR}/${CARDANO_NETWORK}-relay:/node" \
+    --volume "${WORK_DIR}/wallets/${name}:/root" \
+    --workdir /root \
+    genzbank/cardano-cli \
+    transaction sign \
+        --tx-body-file transactions/tx.${TIMESTAMP}.raw \
+        --signing-key-file payment.skey \
+        ${NETWORK_ARGUMENT} \
+        --out-file transactions/tx.${TIMESTAMP}.signed
+    
+
+# Submit the transaction
+read -n 1 -r -s -p $'Press enter to submit the transaction...\n'
+
+echo "Submit transaction"
+OUT=$(cardano-cli transaction submit \
+    --tx-file transactions/tx.${TIMESTAMP}.signed \
+    ${NETWORK_ARGUMENT} 2>&1)
+
+if [[ $OUT =~ "Error" ]]
+then
+    echo "An error occoured."
+    echo ${OUT}
+    read
+else
+    echo "Transaction has been submitted to the blockchain."
+    echo ${OUT}
+fi
