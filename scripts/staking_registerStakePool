@@ -110,7 +110,7 @@ docker run --interactive \
 if [ -z "$update" ]; then
     echo "Note This is first time to register. If you want to update use --update option"
     # TODO: maso, 2022: add update option
-    POOL_DEPOSIT=$(jq -r .stakePoolDeposit protocol.json)
+    POOL_DEPOSIT=$(jq -r .stakePoolDeposit "${stakingDir}/protocol.json")
 else
     echo "Try to update"
     POOL_DEPOSIT=0
