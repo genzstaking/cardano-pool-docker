@@ -74,8 +74,6 @@ while true; do
     echo "Nothing merge"
     exit 0
 done
-echo $txInString
-
 
 mkdir -p "${WORK_DIR}/wallets/${name}/transactions/"
 
@@ -98,7 +96,7 @@ docker run --interactive \
     genzbank/cardano-cli \
     transaction build-raw \
         ${txInString} \
-        --tx-out ${TO_ADDR}+0 \
+        --tx-out ${ADDRESS}+0 \
         --ttl 0 \
         --fee 0 \
         --out-file transactions/tx.${TIMESTAMP}.draft
