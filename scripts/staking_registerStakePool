@@ -72,7 +72,7 @@ EXTRA_FEE=9000
 #     if [ -z "$UPDATE" ]; then
 #         if [ -n "$(check_pool_registration)" ]; then
 #             echo "Your stake pool has already been registered in the blockchain."
-#             touch ${NODE_PATH}/staking/wallets/owner/transactions/register_stake_pool.submitted
+#             touch ${NODE_PATH}/staking/wallets/${rewardWallet}/transactions/register_stake_pool.submitted
 #             exit
 #         fi
 #     else
@@ -131,7 +131,7 @@ if [ -n "$MULTI_OWNERS" ]; then
 fi
 
 if [ -z "$NO_DELEG" ]; then
-    DELEG_CERTS="--certificate-file /wallets/owner/delegation.cert ${MULTIOWNERS_CERT_STRING}"
+    DELEG_CERTS="--certificate-file /wallets/${rewardWallet}/delegation.cert ${MULTIOWNERS_CERT_STRING}"
 fi
 
 # Draft transaction
@@ -232,7 +232,7 @@ read -n 1 -r -s -p $'Press enter to submit the certificates...\n'
 
 echo "Submit transaction"
 OUT=$(cardano-cli transaction submit \
-    --tx-file wallets/owner/transactions/register_stake_pool.signed \
+    --tx-file wallets/${rewardWallet}/transactions/register_stake_pool.signed \
     ${NETWORK_ARGUMENT} 2>&1)
 
 if [[ $OUT =~ "Error" ]]
@@ -248,5 +248,5 @@ else
     #wait_for_slot ${TTL}
     wait_for_pool_registration
     echo "Your stake pool registration has been sent to the blockchain."
-    touch ${NODE_PATH}/staking/wallets/owner/transactions/register_stake_pool.submitted
+    touch ${NODE_PATH}/staking/wallets/${rewardWallet}/transactions/register_stake_pool.submitted
 fi
