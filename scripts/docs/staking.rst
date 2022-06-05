@@ -26,3 +26,9 @@
       --pool-margin 0.01 \
       --pool-pledge 0 \
       --metadata-url https://raw.githubusercontent.com/genz-pool/genz-pool.github.io/main/metadata-cardano.json
+
+      
+      registerStakePool
+      
+       --reward-wallet
+      
