@@ -102,10 +102,100 @@ docker run --interactive \
       --out-file pool.dereg
 
 # 05- Find your balance and UTXOs.
+EXTRA_FEE=9000
+POOL_DEPOSIT=0 # Is update command
+ADDRESS=$(cat "wallets/${rewardWallet}/payment.addr")
+check_balance $(expr ${POOL_DEPOSIT} + ${EXTRA_FEE})
+# NO need
+
 # 06- Find the tip of the blockchain to set the invalid-here after parameter properly.
+SLOT=$("${SRC_DIR}/relay_get_slot")
+TTL=$(expr ${SLOT} + 1000)
+
 # 07- Run the build-raw transaction command
+
+# Draft transaction
+docker run --interactive \
+    --env CARDANO_NODE_SOCKET_PATH=/node/node.socket \
+    --volume "${WORK_DIR}/${CARDANO_NETWORK}-relay:/node" \
+    --volume "${WORK_DIR}/wallets:/walletsREMAINING_AFTER_TX" \
+    --volume "${stakingDir}:/root" \
+    --workdir /root \
+    genzbank/cardano-cli \
+    transaction build-raw \
+        --tx-in "${UTXO}#${TXIX}" \
+        --tx-out ${ADDRESS}+0 \
+        --fee 0 \
+        --out-file "/wallets/${rewardWallet}/transactions/retire_stake_pool.draft" \
+        --certificate-file pool.dereg ${DELEG_CERTS}
+
 # 08- Calculate the minimum fee
+## Calculate the fee
+FEE=$(docker run --interactive \
+    --env CARDANO_NODE_SOCKET_PATH=/node/node.socket \
+    --volume "${WORK_DIR}/${CARDANO_NETWORK}-relay:/node" \
+    --volume "${WORK_DIR}/wallets:/wallets" \
+    --volume "${stakingDir}:/root" \
+    --workdir /root \
+    genzbank/cardano-cli \
+    transaction calculate-min-fee \
+        --tx-body-file "/wallets/${rewardWallet}/transactions/retire_stake_pool.draft" \
+        --tx-in-count 1 \
+        --tx-out-count 1 \
+        ${NETWORK_ARGUMENT} \
+        --witness-count 1 \
+        --byron-witness-count 0 \
+        --protocol-params-file protocol.json | tr ' ' '\n' | head -1)
+TOTAL_PRICE=$(expr ${FEE} + ${POOL_DEPOSIT})
+
 # 09- Calculate your change output
+echo "Fee is: ${FEE} Lovelace"
+echo "Pool-Deposit: ${POOL_DEPOSIT} Lovelace"
+echo "Total Price is: ${TOTAL_PRICE} Lovelace"
+
+# Display transaction info
+REMAINING_AFTER_TX=$(expr ${LOVELACE} - ${TOTAL_PRICE})
+echo "Creating transaction"
+echo "Lovelace after transaction: ${REMAINING_AFTER_TX}"
+echo "Current tip Slot: ${SLOT}"
+echo "TTL: ${TTL}"
+
 # 10- Build the transaction
+docker run --interactive \
+    --env CARDANO_NODE_SOCKET_PATH=/node/node.socket \
+    --volume "${WORK_DIR}/${CARDANO_NETWORK}-relay:/node" \
+    --volume "${WORK_DIR}/wallets:/wallets" \
+    --volume "${stakingDir}:/root" \
+    --workdir /root \
+    genzbank/cardano-cli \
+    transaction build-raw \
+        --tx-in "${UTXO}#${TXIX}" \
+        --tx-out ${ADDRESS}+${REMAINING_AFTER_TX} \
+        --ttl ${TTL} \
+        --fee ${FEE} \
+        --out-file "/wallets/${rewardWallet}/transactions/retire_stake_pool.raw" \
+        --certificate-file pool.dereg ${DELEG_CERTS}
+        
 # 11- Sign the transaction
+docker run --interactive \
+    --env CARDANO_NODE_SOCKET_PATH=/node/node.socket \
+    --volume "${WORK_DIR}/${CARDANO_NETWORK}-relay:/node" \
+    --volume "${WORK_DIR}/wallets:/wallets" \
+    --volume "${stakingDir}:/root" \
+    --workdir /root \
+    genzbank/cardano-cli \
+    transaction sign \
+        --tx-body-file     "/wallets/${rewardWallet}/transactions/retire_stake_pool.raw" \
+        --signing-key-file "/wallets/${rewardWallet}/payment.skey" \
+        --signing-key-file "/wallets/${rewardWallet}/stake.skey" \
+        ${MULTIOWNERS_SIGN} \
+        --signing-key-file "cold-keys/cold.skey" \
+        ${NETWORK_ARGUMENT} \
+        --out-file "/wallets/${rewardWallet}/transactions/retire_stake_pool.signed"
+
 # 12- Send the transaction
+
+# Submit the transaction
+read -n 1 -r -s -p $'Press enter to submit the certificates...\n'
+
+
