@@ -1,0 +1,100 @@
+#!/bin/bash
+
+# Retiring Your Stake Pool
+#
+# SEE: https://www.coincashew.com/coins/overview-ada/guide-how-to-build-a-haskell-stakepool-node/part-iv-administration/retiring-your-stake-pool
+#
+#  If you no longer want to operate your stake pool, then you 
+# can deregister the pool. Deregistering the pool retires the 
+# pool.
+#
+
+source "${SRC_DIR}/functions/check_balance"
+source "${SRC_DIR}/functions/check_pool_registration"
+source "${SRC_DIR}/functions/wait_for_pool_registration"
+source "${SRC_DIR}/functions/wait_for_slot"
+source "${SRC_DIR}/functions/wait_for_sync"
+source "${SRC_DIR}/functions/current_epoch"
+
+TIMESTAMP=$(date +%s)
+
+# Enter staking directory
+stakingDir="${WORK_DIR}/${CARDANO_NETWORK}-staking"
+mkdir -p wallets/${rewardWallet}/transactions
+
+echo ""
+echo "Retiring stake pool."
+
+# Check for required files
+if [ ! -f "wallets/${rewardWallet}/stake.skey" ]; then
+    echo "Missing required stake.skey. You need to run \`wallet create --name ${rewardWallet}\` to generate this key."
+    exit 4 # TODO: maso: 2022: 
+fi
+
+if [ ! -f "wallets/${rewardWallet}/payment.skey" ]; then
+    echo "Missing payment.skey. You need to run \`wallet create --name ${rewardWallet}\` to generate this key."
+    exit 4 # TODO: maso: 2022: 
+fi
+
+if [ ! -f "wallets/${rewardWallet}/payment.addr" ]; then
+    echo "Missing payment.addr. You need to run \`wallet create --naem ${rewardWallet}\` to generate this key."
+    exit 4 # TODO: maso: 2022: 
+fi
+
+if [ ! -f "${stakingDir}/cold-keys/cold.skey" ]; then
+    echo "Missing required cold-keys/cold.skey. You need to run \`staking generateOperationalCertificate\` to generate this key."
+    exit 4 # TODO: maso: 2022: 
+fi
+
+if [ ! -f "${stakingDir}/pool.cert" ]; then
+    echo "Missing required pool.cert. You need to run \`staking generateRegistrationCertificate\` to generate this certificate."
+    exit 4 # TODO: maso: 2022: 
+fi
+
+if [ ! -f "wallets/${rewardWallet}/delegation.cert" ]; then
+    echo "Missing required ${rewardWallet}/delegation.cert. You need to run \`staking generateRegistrationCertificate\` to generate this certificate."
+    exit 4 # TODO: maso: 2022: 
+fi
+
+# Wait for node to sync
+if [[ "${WAIT_FOR_SYNC}" == "True" ]]; then
+    wait_for_sync 99.90
+fi
+
+# 01- generate the protocol-parameters.
+docker run --interactive \
+    --env CARDANO_NODE_SOCKET_PATH=/node/node.socket \
+    --volume "${WORK_DIR}/${CARDANO_NETWORK}-relay:/node" \
+    --volume "${stakingDir}:/root" \
+    --workdir /root \
+    genzbank/cardano-cli \
+    query protocol-parameters \
+        ${NETWORK_ARGUMENT} \
+        --out-file protocol.json
+    
+    
+# 02- Calculate the current epoch.
+epoch=$(get_current_epoch)
+echo "Current EPOCH is ${epoch}"
+
+
+# 03- Find the earliest and latest retirement epoch that your pool can retire.
+poolRetireMaxEpoch=$(cat ${stakingDir}/params.json | jq -r '.poolRetireMaxEpoch')
+echo "poolRetireMaxEpoch: ${poolRetireMaxEpoch}"
+
+minRetirementEpoch=$(( ${epoch} + 1 ))
+maxRetirementEpoch=$(( ${epoch} + ${poolRetireMaxEpoch} ))
+
+echo "earliest epoch for retirement is: ${minRetirementEpoch}"
+echo "latest epoch for retirement is: ${maxRetirementEpoch}"
+
+
+# 04- Create the deregistration certificate
+# 05- Find your balance and UTXOs.
+# 06- Find the tip of the blockchain to set the invalid-here after parameter properly.
+# 07- Run the build-raw transaction command
+# 08- Calculate the minimum fee
+# 09- Calculate your change output
+# 10- Build the transaction
+# 11- Sign the transaction
+# 12- Send the transaction

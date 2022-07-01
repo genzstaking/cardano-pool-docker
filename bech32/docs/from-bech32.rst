@@ -6,6 +6,6 @@ an example to show how to use:
 
 .. code-block:: bash
 
-  $ docker run --interactive \
-     coincodile/cardano-bech32:latest  <<< base16_1wpshgct5v5r5mxh0
+  docker run --interactive \
+    genzbank/bech32  <<< base16_1wpshgct5v5r5mxh0
 

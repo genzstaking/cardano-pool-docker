@@ -161,6 +161,11 @@ case "$1" in
 			export subLongOptions=""
 			export subOptions=""
 			;;
+		retire)
+			export subcommand=$1
+			export subLongOptions=""
+			export subOptions=""
+			;;
 		esac
 		;;
 	util)

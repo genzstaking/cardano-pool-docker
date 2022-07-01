@@ -17,6 +17,7 @@ examples.
    :maxdepth: 1
    :caption: Contents:
 
+   docs/getting-started.rst
    docs/to-bech32
    docs/from-bech32
 
