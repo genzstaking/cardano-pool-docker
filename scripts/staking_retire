@@ -88,8 +88,19 @@ maxRetirementEpoch=$(( ${epoch} + ${poolRetireMaxEpoch} ))
 echo "earliest epoch for retirement is: ${minRetirementEpoch}"
 echo "latest epoch for retirement is: ${maxRetirementEpoch}"
 
-
 # 04- Create the deregistration certificate
+docker run --interactive \
+    --env CARDANO_NODE_SOCKET_PATH=/node/node.socket \
+    --volume "${WORK_DIR}/${CARDANO_NETWORK}-relay:/node" \
+    --volume "${stakingDir}:/root" \
+    --volume "${WORK_DIR}/wallets:/wallets" \
+    --workdir /root \
+    genzbank/cardano-cli \
+    stake-pool deregistration-certificate \
+      --cold-verification-key-file cold-keys/node.vkey \
+      --epoch $minRetirementEpoch \
+      --out-file pool.dereg
+
 # 05- Find your balance and UTXOs.
 # 06- Find the tip of the blockchain to set the invalid-here after parameter properly.
 # 07- Run the build-raw transaction command
