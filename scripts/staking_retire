@@ -79,7 +79,7 @@ echo "Current EPOCH is ${epoch}"
 
 
 # 03- Find the earliest and latest retirement epoch that your pool can retire.
-poolRetireMaxEpoch=$(cat ${stakingDir}/params.json | jq -r '.poolRetireMaxEpoch')
+poolRetireMaxEpoch=$(cat ${stakingDir}/protocol.json | jq -r '.poolRetireMaxEpoch')
 echo "poolRetireMaxEpoch: ${poolRetireMaxEpoch}"
 
 minRetirementEpoch=$(( ${epoch} + 1 ))
