@@ -97,7 +97,7 @@ docker run --interactive \
     --workdir /root \
     genzbank/cardano-cli \
     stake-pool deregistration-certificate \
-      --cold-verification-key-file cold-keys/node.vkey \
+      --cold-verification-key-file cold-keys/cold.vkey \
       --epoch $minRetirementEpoch \
       --out-file pool.dereg
 
