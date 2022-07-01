@@ -198,4 +198,30 @@ docker run --interactive \
 # Submit the transaction
 read -n 1 -r -s -p $'Press enter to submit the certificates...\n'
 
+OUT=$(docker run --interactive \
+    --env CARDANO_NODE_SOCKET_PATH=/node/node.socket \
+    --volume "${WORK_DIR}/${CARDANO_NETWORK}-relay:/node" \
+    --volume "${WORK_DIR}/wallets:/wallets" \
+    --volume "${stakingDir}:/root" \
+    --workdir /root \
+    genzbank/cardano-cli \
+    transaction submit \
+    --tx-file "/wallets/${rewardWallet}/transactions/retire_stake_pool.signed" \
+    ${NETWORK_ARGUMENT} 2>&1)
+
+if [[ $OUT =~ "Error" ]]
+then
+    echo "An error occoured."
+    echo ${OUT}
+    read
+else
+    echo "Transaction has been submitted to the blockchain."
+    echo ${OUT}
+
+    # Wait for blockchain to register the pool
+    #wait_for_slot ${TTL}
+    wait_for_pool_registration
+    echo "Your stake pool registration has been sent to the blockchain."
+    touch "${WORK_DIR}/wallets/${rewardWallet}/transactions/register_stake_pool.submitted"
+fi
 
