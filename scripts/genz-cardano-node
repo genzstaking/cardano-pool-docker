@@ -163,7 +163,7 @@ case "$1" in
 			;;
 		retire)
 			export subcommand=$1
-			export subLongOptions=""
+			export subLongOptions=",reward-wallet:"
 			export subOptions=""
 			;;
 		esac
