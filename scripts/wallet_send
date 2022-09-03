@@ -101,7 +101,7 @@ fi
 TOTAL_PRICE=$(expr ${FEE} + ${value_LOVELACE})
 
 # Find UTXO in address with enough lovelace to do the transaction
-if [ "$TOTAL_PRICE" != "$LOVELACE"];then
+if [ "$TOTAL_PRICE" != "$LOVELACE" ];then
     check_balance ${TOTAL_PRICE}
 fi
 
