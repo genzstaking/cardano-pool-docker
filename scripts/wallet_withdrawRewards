@@ -130,36 +130,56 @@ echo "Lovelace after withdrawal: ${BALANCE_AFTER_TX}"
 #
 # Create the transaction
 #
-#cardano-cli transaction build-raw \
-#    --tx-in "${UTXO}#${TXIX}" \
-#    --tx-out ${ADDRESS}+${BALANCE_AFTER_TX} \
-#    --withdrawal ${STAKE_ADDRESS}+${REWARD_BALANCE} \
-#    --ttl ${TTL} \
-#    --fee ${FEE} \
-#    --out-file transactions/tx.${TIMESTAMP}.raw
-#
-#cardano-cli transaction sign \
-#    --tx-body-file transactions/tx.${TIMESTAMP}.raw \
-#    --signing-key-file payment.skey \
-#    --signing-key-file stake.skey \
-#    ${NETWORK_ARGUMENT} \
-#    --out-file transactions/tx.${TIMESTAMP}.signed
-#
-## Submit the transaction
-#read -n 1 -r -s -p $'Press enter to submit the transaction...\n'
-#
-#echo "Submit transaction"
-#OUT=$(cardano-cli transaction submit \
-#    --tx-file transactions/tx.${TIMESTAMP}.signed \
-#    ${NETWORK_ARGUMENT} 2>&1)
-#
-#if [[ $OUT =~ "Error" ]]
-#then
-#    echo "An error occoured."
-#    echo ${OUT}
-#    read
-#else
-#    echo "Transaction has been submitted to the blockchain."
-#    echo ${OUT}
-#fi
-#
+docker run --interactive \
+    --env CARDANO_NODE_SOCKET_PATH=/node/node.socket \
+    --volume "${WORK_DIR}/${CARDANO_NETWORK}-relay:/node" \
+    --volume "${WORK_DIR}/wallets:/wallets" \
+    --volume "${stakingDir}:/root" \
+    --workdir /root \
+    genzbank/cardano-cli \
+    transaction build-raw \
+        --tx-in "${UTXO}#${TXIX}" \
+        --tx-out ${ADDRESS}+${BALANCE_AFTER_TX} \
+        --withdrawal ${STAKE_ADDRESS}+${REWARD_BALANCE} \
+        --ttl ${TTL} \
+        --fee ${FEE} \
+        --out-file /wallets/transactions/tx.${TIMESTAMP}.raw
+
+docker run --interactive \
+    --env CARDANO_NODE_SOCKET_PATH=/node/node.socket \
+    --volume "${WORK_DIR}/${CARDANO_NETWORK}-relay:/node" \
+    --volume "${WORK_DIR}/wallets:/wallets" \
+    --volume "${stakingDir}:/root" \
+    --workdir /root \
+    genzbank/cardano-cli \
+    transaction sign \
+        --tx-body-file /wallets/transactions/tx.${TIMESTAMP}.raw \
+        --signing-key-file /wallets/${name}/payment.skey \
+        --signing-key-file /wallets/${name}/stake.skey \
+        ${NETWORK_ARGUMENT} \
+        --out-file /wallets/transactions/tx.${TIMESTAMP}.signed
+
+# Submit the transaction
+read -n 1 -r -s -p $'Press enter to submit the transaction...\n'
+
+echo "Submit transaction"
+OUT=$(docker run --interactive \
+    --env CARDANO_NODE_SOCKET_PATH=/node/node.socket \
+    --volume "${WORK_DIR}/${CARDANO_NETWORK}-relay:/node" \
+    --volume "${WORK_DIR}/wallets:/wallets" \
+    --volume "${stakingDir}:/root" \
+    --workdir /root \
+    genzbank/cardano-cli \
+    transaction submit \
+        --tx-file /wallets/transactions/tx.${TIMESTAMP}.signed \
+        ${NETWORK_ARGUMENT} 2>&1)
+
+if [[ $OUT =~ "Error" ]]
+then
+    echo "An error occoured."
+    echo ${OUT}
+    read
+else
+    echo "Transaction has been submitted to the blockchain."
+    echo ${OUT}
+fi
