@@ -101,7 +101,9 @@ fi
 TOTAL_PRICE=$(expr ${FEE} + ${value_LOVELACE})
 
 # Find UTXO in address with enough lovelace to do the transaction
-check_balance ${TOTAL_PRICE}
+if [ "$TOTAL_PRICE" != "$LOVELACE"];then
+    check_balance ${TOTAL_PRICE}
+fi
 
 # Update slot and TTL
 SLOT=$("${SRC_DIR}/relay_get_slot")
@@ -126,19 +128,26 @@ echo "Balance after transaction: ${REMAINING_AFTER_TX} Lovelace"
 # Create the transaction
 #
 echo "Create transaction"
-#cardano-cli transaction build-raw \
-#    --tx-in "${UTXO}#${TXIX}" \
-#    --tx-out ${TO_ADDR}+${SEND_LOVELACE} \
-#    --tx-out ${ADDRESS}+${REMAINING_AFTER_TX} \
-#    --ttl ${TTL} \
-#    --fee ${FEE} \
-#    --out-file transactions/tx.${TIMESTAMP}.raw
-#
-#cardano-cli transaction sign \
-#    --tx-body-file transactions/tx.${TIMESTAMP}.raw \
-#    --signing-key-file payment.skey \
-#    ${NETWORK_ARGUMENT} \
-#    --out-file transactions/tx.${TIMESTAMP}.signed
+docker run --interactive \
+    --env CARDANO_NODE_SOCKET_PATH=/node/node.socket \
+    --volume "${WORK_DIR}/${CARDANO_NETWORK}-relay:/node" \
+    --volume "${stakingDir}:/root" \
+    --volume "${WORK_DIR}/wallets:/wallets" \
+    --workdir /root \
+    genzbank/cardano-cli \
+    transaction build-raw \
+        --tx-in "${UTXO}#${TXIX}" \
+        --tx-out ${TO_ADDR}+${SEND_LOVELACE} \
+        --tx-out ${ADDRESS}+${REMAINING_AFTER_TX} \
+        --ttl ${TTL} \
+        --fee ${FEE} \
+        --out-file transactions/tx.${TIMESTAMP}.raw
+
+cardano-cli transaction sign \
+    --tx-body-file transactions/tx.${TIMESTAMP}.raw \
+    --signing-key-file payment.skey \
+    ${NETWORK_ARGUMENT} \
+    --out-file transactions/tx.${TIMESTAMP}.signed
 
 # Submit the transaction
 read -n 1 -r -s -p $'Press enter to submit the transaction...\n'
