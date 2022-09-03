@@ -137,17 +137,24 @@ docker run --interactive \
     genzbank/cardano-cli \
     transaction build-raw \
         --tx-in "${UTXO}#${TXIX}" \
-        --tx-out ${TO_ADDR}+${SEND_LOVELACE} \
+        --tx-out ${to}+${value_LOVELACE} \
         --tx-out ${ADDRESS}+${REMAINING_AFTER_TX} \
         --ttl ${TTL} \
         --fee ${FEE} \
         --out-file transactions/tx.${TIMESTAMP}.raw
 
-cardano-cli transaction sign \
-    --tx-body-file transactions/tx.${TIMESTAMP}.raw \
-    --signing-key-file payment.skey \
-    ${NETWORK_ARGUMENT} \
-    --out-file transactions/tx.${TIMESTAMP}.signed
+docker run --interactive \
+    --env CARDANO_NODE_SOCKET_PATH=/node/node.socket \
+    --volume "${WORK_DIR}/${CARDANO_NETWORK}-relay:/node" \
+    --volume "${stakingDir}:/root" \
+    --volume "${WORK_DIR}/wallets:/wallets" \
+    --workdir /root \
+    genzbank/cardano-cli \
+    transaction sign \
+        --tx-body-file /wallets/transactions/tx.${TIMESTAMP}.raw \
+        --signing-key-file /wallets/${name}/payment.skey \
+        ${NETWORK_ARGUMENT} \
+        --out-file /wallets/transactions/tx.${TIMESTAMP}.signed
 
 # Submit the transaction
 read -n 1 -r -s -p $'Press enter to submit the transaction...\n'
