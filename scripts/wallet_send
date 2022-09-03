@@ -8,11 +8,14 @@ source "${SRC_DIR}/functions/wait_for_slot"
 source "${SRC_DIR}/functions/wait_for_sync"
 
 
-
 WALLET=$1
 TO_ADDR=$2
 SEND_ADA=$3
 TIMESTAMP=$(date +%s)
+
+# Enter staking directory
+stakingDir="${WORK_DIR}/${CARDANO_NETWORK}-staking"
+mkdir -p wallets/transactions
 
 if [ -z "$name" ]; then
 	export name="main"
@@ -35,14 +38,10 @@ if [ ! -f "${WORK_DIR}/wallets/${name}/payment.addr" ]; then
 fi
 
 
-#cd ${NODE_PATH}/staking/wallets/${WALLET}/
-mkdir -p wallets/transactions/
-
 # Wait for node to sync
 if [[ "${WAIT_FOR_SYNC}" == "True" ]]; then
     wait_for_sync 99.90
 fi
-
 
 docker run --interactive \
     --env CARDANO_NODE_SOCKET_PATH=/node/node.socket \
