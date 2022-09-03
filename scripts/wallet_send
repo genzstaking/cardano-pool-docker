@@ -1,0 +1,153 @@
+#!/bin/bash
+
+# Init vars
+source "${SRC_DIR}/functions/check_balance"
+source "${SRC_DIR}/functions/check_pool_registration"
+source "${SRC_DIR}/functions/wait_for_pool_registration"
+source "${SRC_DIR}/functions/wait_for_slot"
+source "${SRC_DIR}/functions/wait_for_sync"
+
+
+
+WALLET=$1
+TO_ADDR=$2
+SEND_ADA=$3
+TIMESTAMP=$(date +%s)
+
+if [ -z "$name" ]; then
+	export name="main"
+fi
+
+if [ -z "$to" ]; then
+    echo "Invalid recipient address."
+    exit 3 #TODO $ERROR_CODE_MISSING
+fi
+
+# Check for required files
+if [ ! -f "${WORK_DIR}/wallets/${name}/payment.skey" ]; then
+    echo "Missing required payment.skey. You need to run \`wallet generate --name=${name}\` to generate this key."
+    exit 3 #TODO $ERROR_CODE_MISSING
+fi
+
+if [ ! -f "${WORK_DIR}/wallets/${name}/payment.addr" ]; then
+    echo "Missing required payment.addr. You need to run \`wallet generate --name=${name}\` to generate this key."
+    exit 3 #TODO $ERROR_CODE_MISSING
+fi
+
+
+#cd ${NODE_PATH}/staking/wallets/${WALLET}/
+mkdir -p wallets/transactions/
+
+# Wait for node to sync
+if [[ "${WAIT_FOR_SYNC}" == "True" ]]; then
+    wait_for_sync 99.90
+fi
+
+
+docker run --interactive \
+    --env CARDANO_NODE_SOCKET_PATH=/node/node.socket \
+    --volume "${WORK_DIR}/${CARDANO_NETWORK}-relay:/node" \
+    --volume "${stakingDir}:/root" \
+    --workdir /root \
+    genzbank/cardano-cli \
+    query protocol-parameters \
+        ${NETWORK_ARGUMENT} \
+        --out-file protocol.json
+
+
+ADDRESS=$(cat "wallets/${name}/payment.addr")
+SEND_LOVELACE=$(expr ${value} \* 1000000) # Convert ADA to Lovelace
+check_balance $value
+
+# Draft transaction
+docker run --interactive \
+    --env CARDANO_NODE_SOCKET_PATH=/node/node.socket \
+    --volume "${WORK_DIR}/${CARDANO_NETWORK}-relay:/node" \
+    --volume "${stakingDir}:/root" \
+    --workdir /root \
+    genzbank/cardano-cli \
+    transaction build-raw \
+        --tx-in "${UTXO}#${TXIX}" \
+        --tx-out ${to}+0 \
+        --tx-out ${ADDRESS}+0 \
+        --ttl 0 \
+        --fee 0 \
+        --out-file /wallets/transactions/tx.${TIMESTAMP}.draft
+
+FEE=$(docker run --interactive \
+    --env CARDANO_NODE_SOCKET_PATH=/node/node.socket \
+    --volume "${WORK_DIR}/${CARDANO_NETWORK}-relay:/node" \
+    --volume "${stakingDir}:/root" \
+    --workdir /root \
+    genzbank/cardano-cli \
+    transaction calculate-min-fee \
+        --tx-body-file /wallets/transactions/tx.${TIMESTAMP}.draft \
+        --tx-in-count 1 \
+        --tx-out-count 2 \
+        ${NETWORK_ARGUMENT} \
+        --witness-count 1 \
+        --byron-witness-count 0 \
+        --protocol-params-file protocol.json | tr ' ' '\n' | head -1)
+
+if [ -z "$value" ]; then
+    value=$(expr ${LOVELACE} - ${FEE})
+fi
+TOTAL_PRICE=$(expr ${FEE} + ${SEND_LOVELACE})
+
+# Find UTXO in address with enough lovelace to do the transaction
+check_balance ${TOTAL_PRICE}
+
+# Update slot and TTL
+SLOT=$("${SRC_DIR}/relay_get_slot")
+TTL=$(expr ${SLOT} + 5000)
+
+# Display transaction info
+REMAINING_AFTER_TX=$(expr ${LOVELACE} - ${TOTAL_PRICE})
+echo "Creating transaction"
+echo "Current tip Slot: ${SLOT}"
+echo "TTL: ${TTL}"
+echo ""
+echo "$SEND_ADA ADA is ${SEND_LOVELACE} Lovelace"
+echo "From wallet: ${WALLET}"
+echo "From address: ${ADDRESS}"
+echo "To address: ${TO_ADDR}"
+echo "Send amount: ${SEND_LOVELACE} Lovelace"
+echo "Fee is: ${FEE} Lovelace"
+echo "Total amount is: ${TOTAL_PRICE} Lovelace"
+echo "Balance after transaction: ${REMAINING_AFTER_TX} Lovelace"
+
+#
+# Create the transaction
+#
+echo "Create transaction"
+#cardano-cli transaction build-raw \
+#    --tx-in "${UTXO}#${TXIX}" \
+#    --tx-out ${TO_ADDR}+${SEND_LOVELACE} \
+#    --tx-out ${ADDRESS}+${REMAINING_AFTER_TX} \
+#    --ttl ${TTL} \
+#    --fee ${FEE} \
+#    --out-file transactions/tx.${TIMESTAMP}.raw
+#
+#cardano-cli transaction sign \
+#    --tx-body-file transactions/tx.${TIMESTAMP}.raw \
+#    --signing-key-file payment.skey \
+#    ${NETWORK_ARGUMENT} \
+#    --out-file transactions/tx.${TIMESTAMP}.signed
+
+# Submit the transaction
+read -n 1 -r -s -p $'Press enter to submit the transaction...\n'
+
+echo "Submit transaction"
+OUT=$(cardano-cli transaction submit \
+    --tx-file transactions/tx.${TIMESTAMP}.signed \
+    ${NETWORK_ARGUMENT} 2>&1)
+
+if [[ $OUT =~ "Error" ]]
+then
+    echo "An error occoured."
+    echo ${OUT}
+    read
+else
+    echo "Transaction has been submitted to the blockchain."
+    echo ${OUT}
+fi
