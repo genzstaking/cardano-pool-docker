@@ -141,7 +141,7 @@ docker run --interactive \
         --tx-out ${ADDRESS}+${REMAINING_AFTER_TX} \
         --ttl ${TTL} \
         --fee ${FEE} \
-        --out-file transactions/tx.${TIMESTAMP}.raw
+        --out-file /wallets/transactions/tx.${TIMESTAMP}.raw
 
 docker run --interactive \
     --env CARDANO_NODE_SOCKET_PATH=/node/node.socket \
