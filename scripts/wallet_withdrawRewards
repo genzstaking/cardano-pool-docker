@@ -113,7 +113,7 @@ check_balance ${FEE}
 
 # Update slot and TTL
 SLOT=$("${SRC_DIR}/relay_get_slot")
-TTL=$(expr ${SLOT} + 500)
+TTL=$(expr ${SLOT} + 5000)
 
 # Display transaction info
 BALANCE_AFTER_TX=$(expr ${LOVELACE} + ${REWARD_BALANCE} - ${FEE})
