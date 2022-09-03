@@ -69,6 +69,7 @@ docker run --interactive \
     --env CARDANO_NODE_SOCKET_PATH=/node/node.socket \
     --volume "${WORK_DIR}/${CARDANO_NETWORK}-relay:/node" \
     --volume "${stakingDir}:/root" \
+    --volume "${WORK_DIR}/wallets:/wallets" \
     --workdir /root \
     genzbank/cardano-cli \
     transaction build-raw \
@@ -83,6 +84,7 @@ FEE=$(docker run --interactive \
     --env CARDANO_NODE_SOCKET_PATH=/node/node.socket \
     --volume "${WORK_DIR}/${CARDANO_NETWORK}-relay:/node" \
     --volume "${stakingDir}:/root" \
+    --volume "${WORK_DIR}/wallets:/wallets" \
     --workdir /root \
     genzbank/cardano-cli \
     transaction calculate-min-fee \
