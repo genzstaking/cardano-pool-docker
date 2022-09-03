@@ -160,9 +160,15 @@ docker run --interactive \
 read -n 1 -r -s -p $'Press enter to submit the transaction...\n'
 
 echo "Submit transaction"
-OUT=$(cardano-cli transaction submit \
-    --tx-file transactions/tx.${TIMESTAMP}.signed \
-    ${NETWORK_ARGUMENT} 2>&1)
+OUT=$(docker run --interactive \
+    --env CARDANO_NODE_SOCKET_PATH=/node/node.socket \
+    --volume "${WORK_DIR}/${CARDANO_NETWORK}-relay:/node" \
+    --volume "${stakingDir}:/root" \
+    --volume "${WORK_DIR}/wallets:/wallets" \
+    --workdir /root \
+    transaction submit \
+        --tx-file /wallets/transactions/tx.${TIMESTAMP}.signed \
+        ${NETWORK_ARGUMENT} 2>&1)
 
 if [[ $OUT =~ "Error" ]]
 then
