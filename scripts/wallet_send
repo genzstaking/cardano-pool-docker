@@ -56,8 +56,13 @@ docker run --interactive \
 
 
 ADDRESS=$(cat "wallets/${name}/payment.addr")
-SEND_LOVELACE=$(expr ${value} \* 1000000) # Convert ADA to Lovelace
-check_balance $value
+
+if [ -z "$value" ]; then
+    value_LOVELACE=100
+else
+	value_LOVELACE=$(expr ${value} \* 1000000) # Convert ADA to Lovelace
+fi
+check_balance $value_LOVELACE
 
 # Draft transaction
 docker run --interactive \
@@ -90,9 +95,9 @@ FEE=$(docker run --interactive \
         --protocol-params-file protocol.json | tr ' ' '\n' | head -1)
 
 if [ -z "$value" ]; then
-    value=$(expr ${LOVELACE} - ${FEE})
+    value_LOVELACE=$(expr ${LOVELACE} - ${FEE})
 fi
-TOTAL_PRICE=$(expr ${FEE} + ${SEND_LOVELACE})
+TOTAL_PRICE=$(expr ${FEE} + ${value_LOVELACE})
 
 # Find UTXO in address with enough lovelace to do the transaction
 check_balance ${TOTAL_PRICE}
@@ -107,11 +112,11 @@ echo "Creating transaction"
 echo "Current tip Slot: ${SLOT}"
 echo "TTL: ${TTL}"
 echo ""
-echo "$SEND_ADA ADA is ${SEND_LOVELACE} Lovelace"
-echo "From wallet: ${WALLET}"
+echo "$value ADA is ${value_LOVELACE} Lovelace"
+echo "From wallet: ${name}"
 echo "From address: ${ADDRESS}"
-echo "To address: ${TO_ADDR}"
-echo "Send amount: ${SEND_LOVELACE} Lovelace"
+echo "To address: ${to}"
+echo "Send amount: ${value_LOVELACE} Lovelace"
 echo "Fee is: ${FEE} Lovelace"
 echo "Total amount is: ${TOTAL_PRICE} Lovelace"
 echo "Balance after transaction: ${REMAINING_AFTER_TX} Lovelace"
