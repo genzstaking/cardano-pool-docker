@@ -12,7 +12,9 @@ TIMESTAMP=$(date +%s)
 
 # Enter staking directory
 stakingDir="${WORK_DIR}/${CARDANO_NETWORK}-staking"
+relayDir="${WORK_DIR}/${CARDANO_NETWORK}-relay"
 mkdir -p wallets/${rewardWallet}/transactions
+walletsDir="${WORK_DIR}/wallets"
 
 if [ -z "$name" ]; then
 	export name="main"
@@ -51,7 +53,7 @@ fi
 
 docker run --interactive \
     --env CARDANO_NODE_SOCKET_PATH=/node/node.socket \
-    --volume "${WORK_DIR}/${CARDANO_NETWORK}-relay:/node" \
+    --volume "${relayDir}:/node" \
     --volume "${stakingDir}:/root" \
     --workdir /root \
     genzbank/cardano-cli \
@@ -65,7 +67,7 @@ STAKE_ADDRESS=$(cat "wallets/${name}/stake.addr")
 
 REWARD_BALANCE=$(docker run --interactive \
     --env CARDANO_NODE_SOCKET_PATH=/node/node.socket \
-    --volume "${WORK_DIR}/${CARDANO_NETWORK}-relay:/node" \
+    --volume "${relayDir}:/node" \
     --volume "${stakingDir}:/root" \
     --workdir /root \
     genzbank/cardano-cli \
@@ -78,7 +80,7 @@ check_balance 200000 # Dummy transaction fee
 echo "Draft transaction"
 docker run --interactive \
     --env CARDANO_NODE_SOCKET_PATH=/node/node.socket \
-    --volume "${WORK_DIR}/${CARDANO_NETWORK}-relay:/node" \
+    --volume "${relayDir}:/node" \
     --volume "${WORK_DIR}/wallets:/wallets" \
     --volume "${stakingDir}:/root" \
     --workdir /root \
@@ -94,8 +96,8 @@ docker run --interactive \
 echo "Calculate fee"
 FEE=$(docker run --interactive \
     --env CARDANO_NODE_SOCKET_PATH=/node/node.socket \
-    --volume "${WORK_DIR}/${CARDANO_NETWORK}-relay:/node" \
-    --volume "${WORK_DIR}/wallets:/wallets" \
+    --volume "${relayDir}:/node" \
+    --volume "${walletsDir}:/wallets" \
     --volume "${stakingDir}:/root" \
     --workdir /root \
     genzbank/cardano-cli \
